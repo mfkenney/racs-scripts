@@ -4,6 +4,11 @@
 #
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
+camera_up ()
+{
+    curl --connect-timeout 2 -s -X HEAD http://$1/index.html > /dev/null
+}
+
 CFGDIR="$HOME/config"
 OUTBOX="$HOME/OUTBOX"
 
@@ -17,13 +22,29 @@ fi
 
 logger -p "local0.info" "Starting photo sequence"
 # Power on the cameras
-logger -p "local0.info" "Cameras powered on"
-# Take a snapshot from each one
+# Wait for cameras to boot
+sleep $RACS_CAMERA_BOOTTIME
+# Verify that cameras are reachable on the network
+cameras=
 for i in $(seq $RACS_NCAMERAS)
 do
-    logger -p "local0.info" "Snapshot from camera-${i}"
-    snapshot.sh "camera-${i}" || \
-        logger -p "local0.warning" "Snapshot failed (camera-${i})"
+    host="camera-${i}"
+    if camera_up $host
+    then
+        cameras="$cameras $host"
+    else
+        logger -p "local0.warn" "$host not reachable"
+    fi
+done
+# Allow cameras to warm-up
+sleep $RACS_CAMERA_WARMUP
+
+# Take a snapshot from each one
+for c in $cameras
+do
+    logger -p "local0.info" "Snapshot from $c"
+    snapshot.sh "$c" || \
+        logger -p "local0.warning" "Snapshot failed ($c)"
 done
 # Power off the cameras
 logger -p "local0.info" "Cameras powered off"

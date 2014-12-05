@@ -10,3 +10,7 @@
 : ${RACS_SCALE=0.25}
 # Number of cameras
 : ${RACS_NCAMERAS=2}
+# Camera boot time in seconds
+: ${RACS_CAMERA_BOOTTIME=30}
+# Extra camera warm-up time in seconds
+: ${RACS_CAMERA_WARMUP=0}
