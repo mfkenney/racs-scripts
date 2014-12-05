@@ -1,0 +1,12 @@
+# -*- mode: shell-script -*-
+#
+# Sampling interval in seconds
+: ${RACS_INTERVAL=21600}
+# NTP server hostname or IP address
+: ${RACS_NTP_SERVER=time1.u.washington.edu}
+# FTP server hostname or IP address
+: ${RACS_FTP_SERVER=pscftp.apl.washington.edu}
+# Rescale factor for uploaded images
+: ${RACS_SCALE=0.25}
+# Number of cameras
+: ${RACS_NCAMERAS=2}

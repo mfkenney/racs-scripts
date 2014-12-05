@@ -1,0 +1,7 @@
+# -*- mode: shell-script -*-
+#
+CFGDIR="$HOME/config"
+
+[ -f "$CFGDIR/defaults" ] && . $CFGDIR/defaults
+
+[ -f "$CFGDIR/updates" ] && . $CFGDIR/updates

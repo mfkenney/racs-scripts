@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# Take a snapshot from one of the cameras, archive it, and save
+# a scaled-down version to the OUTBOX.
+#
+export PATH=$HOME/bin:$PATH
+
+CFGDIR="$HOME/config"
+SNAPSHOTDIR="$HOME/snapshots"
+ARCHIVEDIR="$HOME/archive"
+OUTBOX="$HOME/OUTBOX"
+RACS_SCALE="0.5"
+
+[ -e $CFGDIR/settings ] && . $CFGDIR/settings
+
+camera="$1"
+[ -z "$camera" ] && exit 1
+
+logger -p "local0.info" "Taking a snapshot from $camera"
+cvlc -I dummy -q --run-time=1 "http://${camera}/nph-mjpeg.cgi?0" \
+     --vout=dummy \
+     --video-filter=scene \
+     --scene-format=jpg \
+     --scene-prefix=${camera} \
+     --scene-replace \
+     --scene-path=$SNAPSHOTDIR \
+     vlc://quit 2> /dev/null
+
+img="$SNAPSHOTDIR/${camera}.jpg"
+if [ -e "$img" ]
+then
+    base="$(basename $img)"
+    # Add EXIF date/time to the image file
+    jhead -mkexif -dsft $img
+    # Rescale for upload
+    djpeg "$img" | pnmscale $RACS_SCALE | cjpeg > $OUTBOX/$base
+    # Transfer EXIF header to the scaled image
+    jhead -te $img $OUTBOX/$base
+    # Archive the snapshot using a date/time based directory
+    # scheme.
+    here=$(pwd)
+    cd $SNAPSHOTDIR
+    jhead -nf$ARCHIVEDIR/%f/%Y/%m/%d/%f_%Y%m%d_%H%M%S $base
+    cd $here
+    # Rename the scaled image to match
+    cd $OUTBOX
+    jhead -nf%f_%Y%m%d_%H%M%S $base
+    cd $here
+    logger "Archived snapshot from $camera"
+else
+    logger -p "local0.warning" "Snapshot failed"
+    exit 2
+fi
+
+exit 0
