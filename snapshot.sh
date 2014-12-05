@@ -10,6 +10,7 @@ SNAPSHOTDIR="$HOME/snapshots"
 ARCHIVEDIR="$HOME/archive"
 OUTBOX="$HOME/OUTBOX"
 RACS_SCALE="0.5"
+RACS_STREAM_TIME=1
 
 [ -e $CFGDIR/settings ] && . $CFGDIR/settings
 
@@ -17,7 +18,8 @@ camera="$1"
 [ -z "$camera" ] && exit 1
 
 logger -p "local0.info" "Taking a snapshot from $camera"
-cvlc -I dummy -q --run-time=1 "http://${camera}/nph-mjpeg.cgi?0" \
+cvlc -I dummy -q --run-time=$RACS_STREAM_TIME \
+     "http://${camera}/nph-mjpeg.cgi?0" \
      --vout=dummy \
      --video-filter=scene \
      --scene-format=jpg \
