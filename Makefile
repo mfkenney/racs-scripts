@@ -12,8 +12,8 @@ all: install
 
 install: install-config install-bin
 
-install-bin: $SCRIPTS
+install-bin: $(SCRIPTS)
 	$(INSTALL) $^ $BINDIR/
 
-install-config:
+install-config: $(CFGFILES)
 	$(INSTALL) -m 644 $^ $CFGDIR/
