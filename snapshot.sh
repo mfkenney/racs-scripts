@@ -17,6 +17,13 @@ RACS_STREAM_TIME=1
 camera="$1"
 [ -z "$camera" ] && exit 1
 
+# Full pathname for the snapshot file
+img="$SNAPSHOTDIR/${camera}.jpg"
+# Remove it if it already exists. VLC will overwrite an
+# exiting file but will not update the creation time
+# which will result in an erroneous EXIF timestamp.
+rm -f $img
+
 logger -p "local0.info" "Taking a snapshot from $camera"
 cvlc -I dummy -q --run-time=$RACS_STREAM_TIME \
      "http://${camera}/nph-mjpeg.cgi?0" \
@@ -28,7 +35,6 @@ cvlc -I dummy -q --run-time=$RACS_STREAM_TIME \
      --scene-path=$SNAPSHOTDIR \
      vlc://quit 2> /dev/null
 
-img="$SNAPSHOTDIR/${camera}.jpg"
 if [ -e "$img" ]
 then
     base="$(basename $img)"
@@ -50,7 +56,7 @@ then
     cd $here
     logger "Archived snapshot from $camera"
 else
-    logger -p "local0.warning" "Snapshot failed"
+    logger -p "local0.warning" "Snapshot failed ($camera)"
     exit 2
 fi
 
