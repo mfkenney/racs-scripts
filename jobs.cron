@@ -1,2 +1,2 @@
 MAILTO=""
-@reboot echo "$HOME/bin/tasks.sh > /dev/null" | /usr/bin/at 'now + 2 minutes'
+@reboot echo "$HOME/bin/tasks.sh 1> /dev/null 2>&1" | /usr/bin/at 'now + 2 minutes'
