@@ -20,42 +20,81 @@ then
     exit 1
 fi
 
-logger -p "local0.info" "Starting photo sequence"
-# Power on the cameras
-# Wait for cameras to boot
-sleep $RACS_CAMERA_BOOTTIME
-# Verify that cameras are reachable on the network
-cameras=
+# List of camera hosts that are up
+declare -a up
+# List of camera hosts that are down
+declare -a down
+# Temporary list
+declare -a pool
+
+# Start with all hosts in the down list. Note that Camera N
+# *must* have the hostname "camera-N" assigned in /etc/hosts.
 for i in $(seq $RACS_NCAMERAS)
 do
-    host="camera-${i}"
-    if camera_up $host
-    then
-        cameras="$cameras $host"
-    else
-        logger -p "local0.warn" "$host not reachable"
-    fi
+    down=("${down[@]}" "camera-${i}")
 done
-# Allow cameras to warm-up
-sleep $RACS_CAMERA_WARMUP
 
-# Take a snapshot from each one
-for c in $cameras
+logger -p "local0.info" "Starting photo sequence"
+
+# TODO: Power on the cameras
+
+# Wait for all cameras to boot
+n_up=0
+twait=$(($(date +%s) + RACS_CAMERA_BOOTTIME))
+while (("${#down[@]}" > 0))
 do
-    logger -p "local0.info" "Snapshot from $c"
-    snapshot.sh "$c" || \
-        logger -p "local0.warning" "Snapshot failed ($c)"
+    for host in "${down[@]}"
+    do
+        if camera_up $host
+        then
+            ((n_up++))
+            up=("${up[@]}" "$host")
+        else
+            pool=("${pool[@]}" "$host")
+        fi
+    done
+    ((n_up == RACS_NCAMERAS || $(date +%s) > twait)) && break
+    down=("${pool[@]}")
+    pool=()
+    sleep 5
 done
-# Power off the cameras
+
+if ((n_up == 0))
+then
+    logger -p "local0.emerg" "No cameras available!"
+else
+    # Allow additional warm-up time
+    sleep $RACS_CAMERA_WARMUP
+    # Take a snapshot from each one
+    for c in "${up[@]}"
+    do
+        snapshot.sh "$c"
+    done
+fi
+
+# TODO: Power off the cameras
 logger -p "local0.info" "Cameras powered off"
-# Collect the metadata
-# Establish PPP link
+
+# TODO: Collect the metadata
+# TODO: Establish PPP link
+
 # Sync clock with ntpdate
 sudo ntpdate -b $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
-# Download configuration updates
-# Download list of full-res images
-# Locate full-res images and add to OUTBOX
-# Package-up files in OUTBOX and upload
-# Clean OUTBOX if upload was successful
+
+# TODO: Download configuration updates
+# TODO: Download list of full-res images
+# TODO: Locate full-res images and add to OUTBOX
+
+# Save the last 30 lines of the log to the OUTBOX
+tail -n 30 /var/log/app.log > $OUTBOX/app.log
+
+# TODO: Package-up files in OUTBOX and upload
+# TODO: Clean OUTBOX if upload was successful
+
 # Shutdown until next sample time
-set_alarm.sh $RACS_INTERVAL
+if [ -n "$RACS_NOSLEEP" ]
+then
+    :
+else
+    set_alarm.sh $RACS_INTERVAL
+fi
