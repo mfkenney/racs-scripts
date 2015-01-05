@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Run all RACS tasks and power the system off.
+# Run all RACS tasks
 #
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -9,8 +9,26 @@ camera_up ()
     curl --connect-timeout 2 -s -X HEAD http://$1/index.html > /dev/null
 }
 
+power_on ()
+{
+    for arg
+    do
+        tsctl @localhost DIO setasync "$arg" HIGH
+    done
+}
+
+power_off ()
+{
+    for arg
+    do
+        tsctl @localhost DIO setasync "$arg" LOW
+    done
+}
+
 CFGDIR="$HOME/config"
 OUTBOX="$HOME/OUTBOX"
+INBOX="$HOME/INBOX"
+HOST="$(hostname -s)"
 
 [ -e $CFGDIR/settings ] && . $CFGDIR/settings
 
@@ -34,9 +52,16 @@ do
     down=("${down[@]}" "camera-${i}")
 done
 
-logger -p "local0.info" "Starting photo sequence"
+logger -p "local0.info" "Powering on cameras"
 
-# TODO: Power on the cameras
+# Start the A/D monitor
+# TODO: add A/D config file
+adread --interval=5s > $OUTBOX/adc.csv &
+child=$!
+# Power on the ethernet switch
+power_on $RACS_ENET_POWER
+# Power on the cameras
+power_on "${RACS_CAMERA_POWER[@]}"
 
 # Wait for all cameras to boot
 n_up=0
@@ -47,12 +72,14 @@ do
     do
         if camera_up $host
         then
+            logger -p "local0.info" "$host ready"
             ((n_up++))
             up=("${up[@]}" "$host")
         else
             pool=("${pool[@]}" "$host")
         fi
     done
+    # Exit the loop when all cameras are up or time has expired
     ((n_up == RACS_NCAMERAS || $(date +%s) > twait)) && break
     down=("${pool[@]}")
     pool=()
@@ -72,24 +99,56 @@ else
     done
 fi
 
-# TODO: Power off the cameras
+# Power off the cameras
+power_off "${RACS_CAMERA_POWER[@]}"
 logger -p "local0.info" "Cameras powered off"
 
-# TODO: Collect the metadata
 # TODO: Establish PPP link
 
 # Sync clock with ntpdate
 sudo ntpdate -b $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
 
-# TODO: Download configuration updates
-# TODO: Download list of full-res images
-# TODO: Locate full-res images and add to OUTBOX
+# Download configuration updates and the list of
+# requested full-res images to the INBOX
+if [ -n "$RACS_FTP_SERVER" ]
+then
+    ftp -p $RACS_FTP_SERVER<<EOF
+cd outgoing/$HOST
+lcd $INBOX
+get updates
+delete updates
+get fullres.txt
+delete fullres.txt
+EOF
+    [ -e $INBOX/updates ] mv $INBOX/updates $CFGDIR
+fi
+
+# Locate full-res images and add to OUTBOX
+if [ -e "$INBOX/fullres.txt" ]
+then
+    while read name
+    do
+        findimg.sh "$name"
+    done <"$INBOX/fullres.txt"
+    rm -f "$INBOX/fullres.txt"
+fi
 
 # Save the last 30 lines of the log to the OUTBOX
 tail -n 30 /var/log/app.log > $OUTBOX/app.log
 
-# TODO: Package-up files in OUTBOX and upload
-# TODO: Clean OUTBOX if upload was successful
+# Stop the A/D monitor and save the output to the OUTBOX
+kill -TERM $child
+
+# Upload files from the OUTBOX. Files are removed after
+# they are successfully transfered.
+(
+    if [ -n "$RACS_FTP_SERVER" ]
+    then
+        cd $OUTBOX
+        gzip adc.csv app.log
+        wput -R * ftp://$RACS_FTP_SERVER/incoming
+    fi
+)
 
 # Shutdown until next sample time
 if [ -n "$RACS_NOSLEEP" ]
