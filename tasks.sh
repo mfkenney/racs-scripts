@@ -28,7 +28,7 @@ power_off ()
 CFGDIR="$HOME/config"
 OUTBOX="$HOME/OUTBOX"
 INBOX="$HOME/INBOX"
-HOST="$(hostname -s)"
+ID="$(hostname -s)"
 
 [ -e $CFGDIR/settings ] && . $CFGDIR/settings
 
@@ -113,7 +113,7 @@ sudo ntpdate -b $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
 if [ -n "$RACS_FTP_SERVER" ]
 then
     ftp -p $RACS_FTP_SERVER<<EOF
-cd outgoing/$HOST
+cd outgoing/$ID
 lcd $INBOX
 get updates
 delete updates
@@ -137,7 +137,7 @@ fi
 tail -n 30 /var/log/app.log > $OUTBOX/app.log
 
 # Stop the A/D monitor and save the output to the OUTBOX
-kill -TERM $child
+[ -n "$child" ] && kill -TERM $child
 
 # Upload files from the OUTBOX. Files are removed after
 # they are successfully transfered.
@@ -146,7 +146,7 @@ kill -TERM $child
     then
         cd $OUTBOX
         gzip adc.csv app.log
-        wput -R * ftp://$RACS_FTP_SERVER/incoming
+        wput --disable-tls -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
     fi
 )
 
