@@ -22,17 +22,16 @@ camera_menu ()
     do
         if power_test $sw
         then
-            state="Off"
-            label="Turn camera off"
+            power=("Off" "Turn camera off")
         else
-            state="On"
-            label="Turn camera on"
+            power=("On" "Turn camera on")
         fi
+
         choice=$(whiptail --title "Camera-${idx} Test" \
                           --backtitle "RACS 2.0" \
                           --menu "Choose an option" 15 45 8 \
                           "<--Back" "Exit this menu" \
-                          "$state" "$label" \
+                          "${power[@]}" \
                           "Snapshot" "Take a snapshot" 3>&1 1>&2 2>&3)
         [ "$?" = "0" ] || return
 
@@ -57,6 +56,7 @@ camera_menu ()
                              --msgbox "$out" 15 50
                 else
                     whiptail --title ERROR \
+                             --backtitle "RACS 2.0" \
                              --msgbox "You must power-on the camera first!" \
                              8 50
                 fi
@@ -69,19 +69,23 @@ main_menu ()
 {
     if /sbin/ifconfig ppp0 1> /dev/null 2>&1
     then
-        op="PPP-down"
-        label="Stop PPP connection"
+        ppp=("PPP-down" "Stop PPP connection")
     else
-        op="PPP-up"
-        label="Start PPP connection"
+        ppp=("PPP-up" "Start PPP connection")
     fi
+
+    cameras=()
+    for ((i = 0; i < RACS_NCAMERAS; i++))
+    do
+        idx=$((i+1))
+        cameras+=("Camera-${idx}" "Test camera $idx")
+    done
+
     choice=$(whiptail --title "Test Menu" \
                       --backtitle "RACS 2.0" \
                       --menu "Choose an option" 15 45 8 \
-                      "Camera-1" "Test camera 1" \
-                      "Camera-2" "Test camera 2" \
-                      "Camera-3" "Test camera 3" \
-                      "$op" "$label" \
+                      "${cameras[@]}" \
+                      "${ppp[@]}" \
                       "Upload" "Upload contents of OUTBOX" \
                       "ADC" "Read A/D data" 3>&1 1>&2 2>&3)
     rval=$?
@@ -101,7 +105,7 @@ adc ()
         echo $(( i*100/(n-1) ))
     done | whiptail --gauge "Collecting $t seconds of A/D data ..." 6 50 0
     kill $child
-    wait
+    wait $child
     whiptail --title "A/D Output" \
              --backtitle "RACS 2.0" \
              --textbox /tmp/adc.csv 15 60
