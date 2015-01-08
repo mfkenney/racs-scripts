@@ -50,10 +50,13 @@ camera_menu ()
             Snapshot)
                 if power_test $sw
                 then
-                    out="$(snapshot.sh camera-${idx} 2>&1)"
+                    snapshot.sh camera-$idx yes 2> /tmp/snap.out |\
+                        whiptail --title Snapshot \
+                                 --backtitle "RACS 2.0" \
+                                 --gauge "Taking snapshot..." 6 50 0
                     whiptail --title "Snapshot output" \
                              --backtitle "RACS 2.0" \
-                             --msgbox "$out" 15 50
+                             --textbox /tmp/snap.out 15 60
                 else
                     whiptail --title ERROR \
                              --backtitle "RACS 2.0" \
@@ -123,7 +126,7 @@ upload_outbox ()
 }
 
 choice=$(main_menu)
-while $?
+while [[ $? = 0 ]]
 do
     case "$choice" in
         Camera-*)
