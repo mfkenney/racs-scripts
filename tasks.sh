@@ -31,26 +31,13 @@ INBOX="$HOME/INBOX"
 ID="$(hostname -s)"
 
 [ -e $CFGDIR/settings ] && . $CFGDIR/settings
+[ -e $HOME/bin/library.sh ] && . $HOME/bin/library.sh
 
 if [ -e /tmp/INHIBIT ]
 then
     logger -p "local0.info" "Autonomous operation inhibited"
     exit 1
 fi
-
-# List of camera hosts that are up
-declare -a up
-# List of camera hosts that are down
-declare -a down
-# Temporary list
-declare -a pool
-
-# Start with all hosts in the down list. Note that Camera N
-# *must* have the hostname "camera-N" assigned in /etc/hosts.
-for i in $(seq $RACS_NCAMERAS)
-do
-    down=("${down[@]}" "camera-${i}")
-done
 
 logger -p "local0.info" "Powering on cameras"
 
@@ -64,26 +51,16 @@ power_on $RACS_ENET_POWER
 power_on "${RACS_CAMERA_POWER[@]}"
 
 # Wait for all cameras to boot
+up=()
 n_up=0
-twait=$(($(date +%s) + RACS_CAMERA_BOOTTIME))
-while (("${#down[@]}" > 0))
+for ((i = 1; i <= RACS_NCAMERAS; i++))
 do
-    for host in "${down[@]}"
-    do
-        if camera_up $host
-        then
-            logger -p "local0.info" "$host ready"
-            ((n_up++))
-            up=("${up[@]}" "$host")
-        else
-            pool=("${pool[@]}" "$host")
-        fi
-    done
-    # Exit the loop when all cameras are up or time has expired
-    ((n_up == RACS_NCAMERAS || $(date +%s) > twait)) && break
-    down=("${pool[@]}")
-    pool=()
-    sleep 5
+    name="camera-${i}"
+    if wait_for_camera $name $RACS_CAMERA_BOOTTIME
+    then
+        up+=("$name")
+        ((n_up++))
+    fi
 done
 
 if ((n_up == 0))
@@ -135,20 +112,25 @@ fi
 
 # Save the last 30 lines of the log to the OUTBOX
 tail -n 30 /var/log/app.log > $OUTBOX/app.log
+gzip $OUTBOX/app.log
 
 # Stop the A/D monitor and save the output to the OUTBOX
-[ -n "$child" ] && kill -TERM $child
+if [ -n "$child" ]
+then
+    kill -TERM $child
+    wait $child
+    gzip adc.csv
+fi
 
 # Upload files from the OUTBOX. Files are removed after
 # they are successfully transfered.
-(
-    if [ -n "$RACS_FTP_SERVER" ]
-    then
+if [ -n "$RACS_FTP_SERVER" ]
+then
+    (
         cd $OUTBOX
-        gzip adc.csv app.log
         wput --disable-tls -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
-    fi
-)
+    )
+fi
 
 # Shutdown until next sample time
 if [ -n "$RACS_NOSLEEP" ]
