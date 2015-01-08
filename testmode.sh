@@ -110,3 +110,34 @@ adc ()
              --backtitle "RACS 2.0" \
              --textbox /tmp/adc.csv 15 60
 }
+
+upload_outbox ()
+{
+    (
+        cd $OUTBOX
+        wput --disable-tls -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
+    ) 1> /tmp/upload.out 2>&1
+    whiptail --title "File Transfer Status" \
+             --backtitle "RACS 2.0" \
+             --textbox /tmp/upload.out 15 60
+}
+
+choice=$(main_menu)
+while $?
+do
+    case "$choice" in
+        Camera-*)
+            idx=$(cut -f2 -d- <<< "$choice")
+            camera_menu $idx
+            ;;
+        PPP-*|Upload)
+            whiptail --title ERROR \
+                     --backtitle "RACS 2.0" \
+                     --msgbox "Not implemented yet" 8 50
+            ;;
+        ADC)
+            adc 10
+            ;;
+    esac
+    choice=$(main_menu)
+done
