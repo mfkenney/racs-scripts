@@ -22,9 +22,6 @@ status ()
     if [ -n "$pct" ]
     then
         echo "$pct"
-        echo "XXX"
-        echo "$msg"
-        echo "XXX"
     fi
 }
 

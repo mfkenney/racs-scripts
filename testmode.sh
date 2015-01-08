@@ -53,8 +53,8 @@ camera_menu ()
                     snapshot.sh camera-$idx yes 2> /tmp/snap.out |\
                         whiptail --title Snapshot \
                                  --backtitle "RACS 2.0" \
-                                 --gauge "Taking snapshot..." 6 50 0
-                    whiptail --title "Snapshot output" \
+                                 --gauge "Taking a snapshot ..." 6 50 0
+                    whiptail --title "Snapshot complete" \
                              --backtitle "RACS 2.0" \
                              --textbox /tmp/snap.out 15 60
                 else
