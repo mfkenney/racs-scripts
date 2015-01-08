@@ -1,4 +1,8 @@
 MAILTO=""
+# Turn on the Ethernet switch
+# @reboot /usr/local.bin/tsctl @localhost dio setasync 8160_lcd_d2
+# Remove "stale" inhibit file
+@reboot rm -f /tmp/INHIBIT
 # Remove old AT jobs from the queue
 @reboot atq -q = | cut -f1 | xargs atrm 1> /dev/null 2>&1
 # Start the tasks after a 2 minute delay
