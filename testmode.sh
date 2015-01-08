@@ -29,6 +29,7 @@ camera_menu ()
             label="Turn camera on"
         fi
         choice=$(whiptail --title "Camera-${idx} Test" \
+                          --backtitle "RACS 2.0" \
                           --menu "Choose an option" 15 45 8 \
                           "<--Back" "Exit this menu" \
                           "$state" "$label" \
@@ -52,7 +53,8 @@ camera_menu ()
                 then
                     out="$(snapshot.sh camera-${idx} 2>&1)"
                     whiptail --title "Snapshot output" \
-                             --msgbox "$out" 10 50
+                             --backtitle "RACS 2.0" \
+                             --msgbox "$out" 15 50
                 else
                     whiptail --title ERROR \
                              --msgbox "You must power-on the camera first!" \
@@ -73,7 +75,8 @@ main_menu ()
         op="PPP-up"
         label="Start PPP connection"
     fi
-    choice=$(whiptail --title "RACS 2.0 Test Menu" \
+    choice=$(whiptail --title "Test Menu" \
+                      --backtitle "RACS 2.0" \
                       --menu "Choose an option" 15 45 8 \
                       "Camera-1" "Test camera 1" \
                       "Camera-2" "Test camera 2" \
@@ -91,12 +94,15 @@ adc ()
     t="${1:-10}"
     n=$((t * 2))
     adread --interval=1s > /tmp/adc.csv &
-    child=$?
+    child=$!
     for ((i = 0; i < n; i++))
     do
         sleep 0.5
         echo $(( i*100/(n-1) ))
     done | whiptail --gauge "Collecting $t seconds of A/D data ..." 6 50 0
-    kill $?
-    whiptail --textbox /tmp/adc.csv 10 60
+    kill $child
+    wait
+    whiptail --title "A/D Output" \
+             --backtitle "RACS 2.0" \
+             --textbox /tmp/adc.csv 15 60
 }
