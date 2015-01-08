@@ -1,26 +1,26 @@
 # -*- mode: shell-script -*-
 #
 # Sampling interval in seconds
-: ${RACS_INTERVAL=21600}
+RACS_INTERVAL=21600
 # NTP server hostname or IP address
-: ${RACS_NTP_SERVER=time1.u.washington.edu}
+RACS_NTP_SERVER=time1.u.washington.edu
 # FTP server hostname or IP address
-: ${RACS_FTP_SERVER=pscftp.apl.washington.edu}
+RACS_FTP_SERVER=pscftp.apl.washington.edu
 # User account on the FTP server
-: ${RACS_FTP_USER=racs}
+RACS_FTP_USER=racs
 # Rescale factor for uploaded images
-: ${RACS_SCALE=0.5}
+RACS_SCALE=0.5
 # Number of cameras
-: ${RACS_NCAMERAS=2}
+RACS_NCAMERAS=2
 # Camera boot time in seconds
-: ${RACS_CAMERA_BOOTTIME=30}
+RACS_CAMERA_BOOTTIME=30
 # Extra camera warm-up time in seconds
-: ${RACS_CAMERA_WARMUP=0}
+RACS_CAMERA_WARMUP=0
 # Number of seconds to run the video stream 1 is usually
 # sufficient but this may need to be increased in low
 # light conditions
-: ${RACS_STREAM_TIME=1}
+RACS_STREAM_TIME=1
 # Camera power switches (must be an array)
-: ${RACS_CAMERA_POWER=( 8160_LCD_D0 8160_LCD_D1 )}
+RACS_CAMERA_POWER=( 8160_LCD_D0 8160_LCD_D1 )
 # Ethernet power
-: ${RACS_ENET_POWER=8160_LCD_D2}
+RACS_ENET_POWER=8160_LCD_D2
