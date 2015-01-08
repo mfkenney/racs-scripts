@@ -59,7 +59,7 @@ then
     jhead -mkexif -dsft $img 1>&2
     # Rescale for upload
     status "Rescaling image" ${verbose:+55}
-    djpeg "$img" | pnmscale $RACS_SCALE | cjpeg > $OUTBOX/$base 1>&2
+    djpeg "$img" | pnmscale $RACS_SCALE | cjpeg > $OUTBOX/$base
     # Transfer EXIF header to the scaled image
     jhead -te $img $OUTBOX/$base 1>&2
     # Archive the snapshot using a date/time based directory
