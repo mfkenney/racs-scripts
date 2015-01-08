@@ -67,18 +67,36 @@ main_menu ()
 {
     if /sbin/ifconfig ppp0 1> /dev/null 2>&1
     then
-        op="PPP up"
-        label="Start PPP connection"
-    else
-        op="PPP down"
+        op="PPP-down"
         label="Stop PPP connection"
+    else
+        op="PPP-up"
+        label="Start PPP connection"
     fi
     choice=$(whiptail --title "RACS 2.0 Test Menu" \
                       --menu "Choose an option" 15 45 8 \
-                      "Camera 1" "Test camera 1" \
-                      "Camera 2" "Test camera 2" \
-                      "Camera 3" "Test camera 3" \
+                      "Camera-1" "Test camera 1" \
+                      "Camera-2" "Test camera 2" \
+                      "Camera-3" "Test camera 3" \
                       "$op" "$label" \
+                      "Upload" "Upload contents of OUTBOX" \
                       "ADC" "Read A/D data" 3>&1 1>&2 2>&3)
+    rval=$?
     echo "$choice"
+    return $rval
+}
+
+adc ()
+{
+    t="${1:-10}"
+    n=$((t * 2))
+    adread --interval=1s > /tmp/adc.csv &
+    child=$?
+    for ((i = 0; i < n; i++))
+    do
+        sleep 0.5
+        echo $(( i*100/(n-1) ))
+    done | whiptail --gauge "Collecting $t seconds of A/D data ..." 6 50 0
+    kill $?
+    whiptail --textbox /tmp/adc.csv 10 60
 }
