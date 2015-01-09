@@ -14,6 +14,10 @@ RACS_STREAM_TIME=1
 
 [ -e $CFGDIR/settings ] && . $CFGDIR/settings
 
+# Log a status message and optionally write a
+# "percent done" value to stdout. The latter
+# item is used when running this script from
+# whiptail or dialog (TUI programs)
 status ()
 {
     msg="$1"
@@ -25,10 +29,35 @@ status ()
     fi
 }
 
+# Create an Exiv2 command file to add metadata to
+# each snapshot image. The file is only created
+# if it doesn't already exist.
+create_metadata ()
+{
+    camera="$1"
+    mf="$CFGDIR/metadata_${camera}.txt"
+    if [ ! -e "$mf" ]
+    then
+        src="$(hostname -s):$camera"
+        cat<<EOF > "$mf"
+set Exif.Image.Make Ascii "Stardot"
+set Exif.Image.Model Ascii "Stardot Netcam XL"
+set Iptc.Application2.Program String "RACS"
+set Iptc.Application2.ProgramVersion String "2.0"
+set Iptc.Application2.Source String $src
+set Exif.Photo.UserComment Comment charset=Ascii Taken by $src
+EOF
+    fi
+    echo "$mf"
+}
+
+
 camera="$1"
 [ -z "$camera" ] && exit 1
 
 verbose="$2"
+
+mf=$(create_metadata "$camera")
 
 # Full pathname for the snapshot file
 img="$SNAPSHOTDIR/${camera}.jpg"
@@ -50,10 +79,13 @@ cvlc -I dummy -q --run-time=$RACS_STREAM_TIME \
 
 if [ -e "$img" ]
 then
+    comment="$(hostname -s):$camera"
     base="$(basename $img)"
     # Add EXIF date/time to the image file
     status "Adding EXIF header" ${verbose:+50}
     jhead -mkexif -dsft $img 1>&2
+    # Use exiv2 to add some additional metadata
+    exiv2 -k -m "$mf" $img 1>&2
     # Rescale for upload
     status "Rescaling image" ${verbose:+55}
     djpeg "$img" | pnmscale $RACS_SCALE | cjpeg > $OUTBOX/$base
