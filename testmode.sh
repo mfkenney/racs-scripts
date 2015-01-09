@@ -29,6 +29,7 @@ camera_menu ()
 
         choice=$(whiptail --title "Camera-${idx} Test" \
                           --backtitle "RACS 2.0" \
+                          --nocancel \
                           --menu "Choose an option" 15 45 8 \
                           "<--Back" "Exit this menu" \
                           "${power[@]}" \
@@ -86,6 +87,7 @@ main_menu ()
 
     choice=$(whiptail --title "Test Menu" \
                       --backtitle "RACS 2.0" \
+                      --cancel-button "Exit" \
                       --menu "Choose an option" 15 45 8 \
                       "${cameras[@]}" \
                       "${ppp[@]}" \
