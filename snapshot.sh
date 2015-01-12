@@ -23,7 +23,7 @@ status ()
 {
     msg="$1"
     pct="$2"
-    log_event "$msg"
+    log_event "INFO" "$msg"
     if [ -n "$pct" ]
     then
         echo "$pct"
