@@ -103,7 +103,7 @@ delete updates
 get fullres.txt
 delete fullres.txt
 EOF
-    [ -e $INBOX/updates ] mv $INBOX/updates $CFGDIR
+    [ -e "$INBOX/updates" ] && mv "$INBOX/updates" "$CFGDIR"
 fi
 
 # Locate full-res images and add to OUTBOX
