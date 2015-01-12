@@ -13,6 +13,7 @@ RACS_SCALE="0.5"
 RACS_STREAM_TIME=1
 
 [ -e $CFGDIR/settings ] && . $CFGDIR/settings
+[ -e $HOME/bin/library.sh ] && . $HOME/bin/library.sh
 
 # Log a status message and optionally write a
 # "percent done" value to stdout. The latter
@@ -22,7 +23,7 @@ status ()
 {
     msg="$1"
     pct="$2"
-    logger -p "local0.info" "$msg"
+    log_event "$msg"
     if [ -n "$pct" ]
     then
         echo "$pct"
@@ -104,7 +105,7 @@ then
     cd $here
     status "Archived snapshot from $camera" ${verbose:+100}
 else
-    logger -p "local0.warning" "Snapshot failed ($camera)"
+    log_event "Snapshot failed ($camera)"
     exit 2
 fi
 

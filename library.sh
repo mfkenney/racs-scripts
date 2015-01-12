@@ -2,6 +2,8 @@
 
 : ${TSCTL=/usr/local/bin/tsctl}
 
+: ${RACS_SESSION_LOG="$HOME/OUTBOX/session.log"}
+
 camera_up ()
 {
     curl --connect-timeout 2 -s -X HEAD http://$1/index.html > /dev/null
@@ -45,4 +47,9 @@ wait_for_camera ()
     done
     [ -n "$verbose" ] && echo "100"
     camera_up $cam
+}
+
+log_event ()
+{
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $@" >> $RACS_SESSION_LOG
 }

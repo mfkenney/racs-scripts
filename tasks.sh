@@ -35,19 +35,19 @@ ID="$(hostname -s)"
 
 if [ -e /tmp/INHIBIT ]
 then
-    logger -p "local0.info" "Autonomous operation inhibited"
+    log_event "INFO" "Autonomous operation inhibited"
     exit 1
 fi
-
-logger -p "local0.info" "Powering on cameras"
 
 # Start the A/D monitor
 # TODO: add A/D config file
 adread --interval=5s > $OUTBOX/adc.csv &
 child=$!
+
 # Power on the ethernet switch
 power_on $RACS_ENET_POWER
 # Power on the cameras
+log_event "INFO" "Powering on cameras"
 power_on "${RACS_CAMERA_POWER[@]}"
 
 # Wait for all cameras to boot
@@ -65,7 +65,7 @@ done
 
 if ((n_up == 0))
 then
-    logger -p "local0.emerg" "No cameras available!"
+    log_event "EMERG" "No cameras available!"
 else
     # Allow additional warm-up time
     sleep $RACS_CAMERA_WARMUP
@@ -78,12 +78,18 @@ fi
 
 # Power off the cameras
 power_off "${RACS_CAMERA_POWER[@]}"
-logger -p "local0.info" "Cameras powered off"
+log_event "INFO" "Cameras powered off"
 
+if [ -n "$RACS_NOSLEEP" ]
+then
+    power_off "$RACS_ENET_POWER"
+    log_event "INFO" "Ethernet switch powered off"
+fi
+
+power_on "$RACS_MODEM_POWER"
+log_event "INFO" "Modem powered on"
 # TODO: Establish PPP link
-
-# Sync clock with ntpdate
-sudo ntpdate -b $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
+log_event "INFO" "Initiating PPP link"
 
 # Download configuration updates and the list of
 # requested full-res images to the INBOX
@@ -110,17 +116,16 @@ then
     rm -f "$INBOX/fullres.txt"
 fi
 
-# Save the last 30 lines of the log to the OUTBOX
-tail -n 30 /var/log/app.log > $OUTBOX/app.log
-gzip $OUTBOX/app.log
-
 # Stop the A/D monitor and save the output to the OUTBOX
 if [ -n "$child" ]
 then
     kill -TERM $child
     wait $child
-    gzip adc.csv
+    gzip $OUTBOX/adc.csv
 fi
+
+# Sync clock with ntpdate
+sudo ntpdate -b $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
 
 # Upload files from the OUTBOX. Files are removed after
 # they are successfully transfered.
@@ -128,7 +133,8 @@ if [ -n "$RACS_FTP_SERVER" ]
 then
     (
         cd $OUTBOX
-        wput --disable-tls -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
+        gzip $RACS_SESSION_LOG
+        wput -nv --disable-tls -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
     )
 fi
 
