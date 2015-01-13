@@ -52,11 +52,19 @@ EOF
     echo "$mf"
 }
 
+verbose=
+if [ "$1" = "-v" ]
+then
+    verbose="yes"
+    shift
+fi
 
 camera="$1"
 [ -z "$camera" ] && exit 1
 
-verbose="$2"
+# Optional power-switch name. If specified we will power
+# the camera off after grabbing an image.
+sw="$2"
 
 mf=$(create_metadata "$camera")
 
@@ -78,9 +86,14 @@ cvlc -I dummy -q --run-time=$RACS_STREAM_TIME \
      --scene-path=$SNAPSHOTDIR \
      vlc://quit 2> /dev/null
 
+if [ -n "$sw" ]
+then
+    log_event "INFO" "Power-off $camera"
+    power_off "$sw"
+fi
+
 if [ -e "$img" ]
 then
-    comment="$(hostname -s):$camera"
     base="$(basename $img)"
     # Add EXIF date/time to the image file
     status "Adding EXIF header" ${verbose:+50}

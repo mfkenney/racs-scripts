@@ -51,7 +51,7 @@ camera_menu ()
             Snapshot)
                 if power_test $sw
                 then
-                    snapshot.sh camera-$idx yes 2> /tmp/snap.out |\
+                    snapshot.sh -v camera-$idx 2> /tmp/snap.out |\
                         whiptail --title Snapshot \
                                  --backtitle "RACS 2.0" \
                                  --gauge "Taking a snapshot ..." 6 50 0

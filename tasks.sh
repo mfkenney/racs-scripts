@@ -68,22 +68,25 @@ done
 
 if ((n_up == 0))
 then
-    log_event "EMERG" "No cameras available!"
+    log_event "ERROR" "No cameras available!"
 else
     # Allow additional warm-up time
     sleep $RACS_CAMERA_WARMUP
-    # Take a snapshot from each one
+    # Take a snapshot from each one and power it off
     for c in "${up[@]}"
     do
-        snapshot.sh "$c"
+        idx=$(cut -f2 -d- <<< "$c")
+        i=$((idx - 1))
+        snapshot.sh "$c" "${RACS_CAMERA_POWER[i]}"
     done
 fi
 
-# Power off the cameras
+# Make sure the cameras are powered off
 power_off "${RACS_CAMERA_POWER[@]}"
-log_event "INFO" "Cameras powered off"
 
-if [ -n "$RACS_NOSLEEP" ]
+# If we are in autonomous mode, it's safe to power off
+# the ethernet switch.
+if [ -z "$RACS_NOSLEEP" ]
 then
     power_off "$RACS_ENET_POWER"
     log_event "INFO" "Ethernet switch powered off"
