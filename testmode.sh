@@ -102,7 +102,7 @@ adc ()
 {
     t="${1:-10}"
     n=$((t * 2))
-    adread --interval=1s > /tmp/adc.csv &
+    adread --interval=1s > $OUTBOX/adc.csv &
     child=$!
     for ((i = 0; i < n; i++))
     do
@@ -113,18 +113,17 @@ adc ()
     wait $child
     whiptail --title "A/D Output" \
              --backtitle "RACS 2.0" \
-             --textbox /tmp/adc.csv 15 60
+             --textbox $OUTBOX/adc.csv 15 60
 }
 
 upload_outbox ()
 {
     (
         cd $OUTBOX
-        wput --disable-tls -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
-    ) 1> /tmp/upload.out 2>&1
-    whiptail --title "File Transfer Status" \
-             --backtitle "RACS 2.0" \
-             --textbox /tmp/upload.out 15 60
+        [ -e "adc.csv" ] && gzip adc.csv
+        [ -e "$RACS_SESSION_LOG" ] && gzip $RACS_SESSION_LOG
+        wput -nv --disable-tls -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
+    )
 }
 
 choice=$(main_menu)
@@ -135,10 +134,13 @@ do
             idx=$(cut -f2 -d- <<< "$choice")
             camera_menu $idx
             ;;
-        PPP-*|Upload)
+        PPP-*)
             whiptail --title ERROR \
                      --backtitle "RACS 2.0" \
                      --msgbox "Not implemented yet" 8 50
+            ;;
+        Upload)
+            upload_outbox
             ;;
         ADC)
             adc 10
@@ -146,3 +148,5 @@ do
     esac
     choice=$(main_menu)
 done
+
+rm -f $RACS_SESSION_LOG
