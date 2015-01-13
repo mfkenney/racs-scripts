@@ -14,6 +14,7 @@ ARCHIVEDIR="$HOME/archive"
 OUTBOX="$HOME/OUTBOX"
 
 [ -e $CFGDIR/settings ] && . $CFGDIR/settings
+[ -e $HOME/bin/library.sh ] && . $HOME/bin/library.sh
 
 name="$1"
 [ -z "$name" ] && exit 1
@@ -28,7 +29,7 @@ if [ -e "$img" ]
 then
     cp $img $OUTBOX
 else
-    logger -p "local0.warning" "Image not found ($name)"
+    log_event "WARNING" "Image not found ($name)"
     exit 2
 fi
 
