@@ -39,6 +39,9 @@ then
     exit 1
 fi
 
+# Remove old files from the OUTBOX
+clean_dir "$OUTBOX" "$RACS_MAX_AGE"
+
 # Start the A/D monitor
 # TODO: add A/D config file
 adread --interval=5s > $OUTBOX/adc.csv &

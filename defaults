@@ -20,6 +20,8 @@ RACS_CAMERA_WARMUP=0
 # sufficient but this may need to be increased in low
 # light conditions
 RACS_STREAM_TIME=1
+# Maximum age (in days) of files in the OUTBOX
+RACS_MAX_AGE=3
 # Camera power switches (must be an array)
 RACS_CAMERA_POWER=( 8160_LCD_D0 8160_LCD_D1 )
 # Ethernet power

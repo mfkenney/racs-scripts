@@ -53,3 +53,10 @@ log_event ()
 {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $@" >> $RACS_SESSION_LOG
 }
+
+clean_dir ()
+{
+    dir="$1"
+    age="$2"
+    find "$dir" -type f -mtime "$age" -exec rm -f {} \;
+}
