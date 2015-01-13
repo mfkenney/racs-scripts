@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Locate an image in the archive and copy to the OUTBOX
 #
