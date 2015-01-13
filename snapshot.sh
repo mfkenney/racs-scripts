@@ -63,7 +63,7 @@ mf=$(create_metadata "$camera")
 # Full pathname for the snapshot file
 img="$SNAPSHOTDIR/${camera}.jpg"
 # Remove it if it already exists. VLC will overwrite an
-# exiting file but will not update the creation time
+# existing file but will not update the creation time
 # which will result in an erroneous EXIF timestamp.
 rm -f $img
 
@@ -101,7 +101,7 @@ then
     cd $here
     # Rename the scaled image to match
     cd $OUTBOX
-    jhead -nf%f_%Y%m%d_%H%M%S $base 1>&2
+    jhead -nf%f_%Y%m%d_%H%M%S_scaled $base 1>&2
     cd $here
     status "Archived snapshot from $camera" ${verbose:+100}
 else
