@@ -8,6 +8,8 @@ RACS_NTP_SERVER=time1.u.washington.edu
 RACS_FTP_SERVER=pscftp.apl.washington.edu
 # User account on the FTP server
 RACS_FTP_USER=racs
+# Maximum number of seconds allowed for file upload
+RACS_FTP_TIMELIMIT=900
 # Rescale factor for uploaded images
 RACS_SCALE=0.5
 # Number of cameras
