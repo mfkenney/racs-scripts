@@ -11,6 +11,8 @@ camera_up ()
 
 power_on ()
 {
+    local arg
+
     for arg
     do
         $TSCTL @localhost DIO setasync "$arg" HIGH
@@ -19,6 +21,8 @@ power_on ()
 
 power_off ()
 {
+    local arg
+
     for arg
     do
         $TSCTL @localhost DIO setasync "$arg" LOW
@@ -27,12 +31,16 @@ power_off ()
 
 power_test ()
 {
+    local state
+
     state=$($TSCTL @localhost DIO getasync $1|cut -f2 -d= 2> /dev/null)
     [ "$state" = "HIGH" ]
 }
 
 wait_for_camera ()
 {
+    local cam twait verbose limit
+
     cam="$1"
     twait="$2"
     verbose="$3"
@@ -56,7 +64,26 @@ log_event ()
 
 clean_dir ()
 {
+    local dir age
+
     dir="$1"
     age="$2"
     find "$dir" -type f -mtime "$age" -exec rm -f {} \;
+}
+
+# Archive all non-JPEG files in the current directory.
+zip_non_jpeg ()
+{
+    local prefix name files
+
+    prefix="${1:-metadata}"
+    name="${prefix}_$(date +'%Y%m%d_%H%M%S').zip"
+    files=()
+    for f in *; do
+        case "$f" in
+            *.jpg|*.zip);;
+            *)files+=("$f") ;;
+        esac
+    done
+    zip -m -T "$name" "${files[@]}" 1>&2 && echo "$name"
 }
