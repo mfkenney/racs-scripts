@@ -62,13 +62,14 @@ log_event ()
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $@" >> $RACS_SESSION_LOG
 }
 
+# Remove all files more than $age days old
 clean_dir ()
 {
     local dir age
 
     dir="$1"
     age="$2"
-    find "$dir" -type f -mtime "$age" -exec rm -f {} \;
+    find "$dir" -type f -mtime "+$age" -exec rm -f {} \;
 }
 
 # Archive all non-JPEG files in the current directory.
