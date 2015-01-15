@@ -127,7 +127,6 @@ if [ -n "$child" ]
 then
     kill -TERM $child
     wait $child
-    gzip $OUTBOX/adc.csv
 fi
 
 # Sync clock with ntpdate
@@ -139,7 +138,7 @@ if [ -n "$RACS_FTP_SERVER" ]
 then
     (
         cd $OUTBOX
-        gzip $RACS_SESSION_LOG
+        zip_non_jpeg
         wput -nv --disable-tls -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
     )
 fi
