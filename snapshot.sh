@@ -12,8 +12,8 @@ OUTBOX="$HOME/OUTBOX"
 RACS_SCALE="0.5"
 RACS_STREAM_TIME=1
 
-[ -e $CFGDIR/settings ] && . $CFGDIR/settings
-[ -e $HOME/bin/library.sh ] && . $HOME/bin/library.sh
+[[ -e $CFGDIR/settings ]] && . $CFGDIR/settings
+[[ -e $HOME/bin/library.sh ]] && . $HOME/bin/library.sh
 
 # Log a status message and optionally write a
 # "percent done" value to stdout. The latter
@@ -24,10 +24,7 @@ status ()
     msg="$1"
     pct="$2"
     log_event "INFO" "$msg"
-    if [ -n "$pct" ]
-    then
-        echo "$pct"
-    fi
+    [[ "$pct" ]] && echo "$pct"
 }
 
 # Create an Exiv2 command file to add metadata to
@@ -37,8 +34,7 @@ create_metadata ()
 {
     camera="$1"
     mf="$CFGDIR/metadata_${camera}.txt"
-    if [ ! -e "$mf" ]
-    then
+    if [[ ! -e "$mf" ]]; then
         src="$(hostname -s):$camera"
         cat<<EOF > "$mf"
 set Exif.Image.Make Ascii "Stardot"
@@ -53,14 +49,13 @@ EOF
 }
 
 verbose=
-if [ "$1" = "-v" ]
-then
+if [[ "$1" = "-v" ]]; then
     verbose="yes"
     shift
 fi
 
 camera="$1"
-[ -z "$camera" ] && exit 1
+[[ "$camera" ]] || exit 1
 
 # Optional power-switch name. If specified we will power
 # the camera off after grabbing an image.
@@ -86,14 +81,12 @@ cvlc -I dummy -q --run-time=$RACS_STREAM_TIME \
      --scene-path=$SNAPSHOTDIR \
      vlc://quit 2> /dev/null
 
-if [ -n "$sw" ]
-then
+if [[ "$sw" ]]; then
     log_event "INFO" "Power-off $camera"
     power_off "$sw"
 fi
 
-if [ -e "$img" ]
-then
+if [[ -e "$img" ]]; then
     base="$(basename $img)"
     # Add EXIF date/time to the image file
     status "Adding EXIF header" ${verbose:+50}

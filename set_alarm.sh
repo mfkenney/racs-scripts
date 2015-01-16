@@ -7,14 +7,13 @@ export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 CFGDIR="$HOME/config"
 
-[ -e $CFGDIR/settings ] && . $CFGDIR/settings
+[[ -e $CFGDIR/settings ]] && . $CFGDIR/settings
 
 t=$(date +%s)
 tnext=$(((1 + t/RACS_INTERVAL)*RACS_INTERVAL))
 tsleep=$((tnext - $(date +%s)))
 
-if ((tsleep > 0))
-then
+if ((tsleep > 0)); then
     logger -p "local0.info" "Sleeping until $(date -d@$tnext)"
     sleep 1
     sudo sync

@@ -30,10 +30,10 @@ OUTBOX="$HOME/OUTBOX"
 INBOX="$HOME/INBOX"
 ID="$(hostname -s)"
 
-[ -e $CFGDIR/settings ] && . $CFGDIR/settings
-[ -e $HOME/bin/library.sh ] && . $HOME/bin/library.sh
+[[ -e $CFGDIR/settings ]] && . $CFGDIR/settings
+[[ -e $HOME/bin/library.sh ]] && . $HOME/bin/library.sh
 
-if [ -e /tmp/INHIBIT ]; then
+if [[ -e /tmp/INHIBIT ]]; then
     logger -p "local0.info" "Autonomous operation inhibited"
     exit 1
 fi
@@ -81,7 +81,7 @@ power_off "${RACS_CAMERA_POWER[@]}"
 
 # If we are in autonomous mode, it's safe to power off
 # the ethernet switch.
-if [ -z "$RACS_NOSLEEP" ]; then
+if [[ ! "$RACS_NOSLEEP" ]]; then
     power_off "$RACS_ENET_POWER"
     log_event "INFO" "Ethernet switch powered off"
 fi
@@ -93,7 +93,7 @@ log_event "INFO" "Initiating PPP link"
 
 # Download configuration updates and the list of
 # requested full-res images to the INBOX
-if [ -n "$RACS_FTP_SERVER" ]; then
+if [[ "$RACS_FTP_SERVER" ]]; then
     ftp -p $RACS_FTP_SERVER<<EOF
 cd outgoing/$ID
 lcd $INBOX
@@ -102,13 +102,13 @@ delete updates
 get fullres.txt
 delete fullres.txt
 EOF
-    if [ -e "$INBOX/updates" ]; then
+    if [[ -e "$INBOX/updates" ]]; then
         mv "$INBOX/updates" "$CFGDIR"
         . $CFGDIR/settings
     fi
 
     # Locate full-res images and add to OUTBOX
-    if [ -e "$INBOX/fullres.txt" ]; then
+    if [[ -e "$INBOX/fullres.txt" ]]; then
         while read name; do
             findimg.sh "$name"
         done <"$INBOX/fullres.txt"
@@ -117,7 +117,7 @@ EOF
 fi
 
 # Stop the A/D monitor
-if [ -n "$child" ]; then
+if [[ "$child" ]]; then
     kill -TERM $child
     wait $child
 fi
@@ -127,8 +127,7 @@ sudo ntpdate -b $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
 
 # Upload files from the OUTBOX. Files are removed after
 # they are successfully transfered.
-#
-if [ -n "$RACS_FTP_SERVER" ]; then
+if [[ "$RACS_FTP_SERVER" ]]; then
     (
         filelist="/tmp/uploads"
         sort_arg="${RACS_REV_SORT:+-r}"
@@ -153,7 +152,7 @@ if [ -n "$RACS_FTP_SERVER" ]; then
         child=$!
         n=$RACS_FTP_TIMELIMIT
         while sleep 1; do
-            kill -0 $child || break
+            kill -0 $child 2> /dev/null || break
             if ((--n <= 0)); then
                 kill $child
                 break
@@ -164,4 +163,4 @@ if [ -n "$RACS_FTP_SERVER" ]; then
 fi
 
 # Shutdown until next sample time
-[ -z "$RACS_NOSLEEP" ] && set_alarm.sh $RACS_INTERVAL
+[[ "$RACS_NOSLEEP" ]] || set_alarm.sh $RACS_INTERVAL

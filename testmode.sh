@@ -9,8 +9,8 @@ OUTBOX="$HOME/OUTBOX"
 INBOX="$HOME/INBOX"
 ID="$(hostname -s)"
 
-[ -e $CFGDIR/settings ] && . $CFGDIR/settings
-[ -e $HOME/bin/library.sh ] && . $HOME/bin/library.sh
+[[ -e $CFGDIR/settings ]] && . $CFGDIR/settings
+[[ -e $HOME/bin/library.sh ]] && . $HOME/bin/library.sh
 
 camera_menu ()
 {
@@ -18,10 +18,8 @@ camera_menu ()
     i=$((idx - 1))
     sw="${RACS_CAMERA_POWER[i]}"
 
-    while true
-    do
-        if power_test $sw
-        then
+    while :; do
+        if power_test $sw; then
             power=("Off" "Turn camera off")
         else
             power=("On" "Turn camera on")
@@ -34,7 +32,7 @@ camera_menu ()
                           "<--Back" "Exit this menu" \
                           "${power[@]}" \
                           "Snapshot" "Take a snapshot" 3>&1 1>&2 2>&3)
-        [ "$?" = "0" ] || return
+        [[ "$?" = "0" ]] || return
 
         case "$choice" in
             "<--Back")
@@ -42,15 +40,14 @@ camera_menu ()
                 ;;
             On)
                 power_on $sw
-                wait_for_camera "camera-${idx}" $RACS_CAMERA_BOOTTIME yes |\
+                wait_for_camera -v "camera-${idx}" $RACS_CAMERA_BOOTTIME |\
                     whiptail --gauge "Waiting for camera to start..." 6 50 0
                 ;;
             Off)
                 power_off $sw
                 ;;
             Snapshot)
-                if power_test $sw
-                then
+                if power_test $sw; then
                     snapshot.sh -v camera-$idx 2> /tmp/snap.out |\
                         whiptail --title Snapshot \
                                  --backtitle "RACS 2.0" \
@@ -71,16 +68,14 @@ camera_menu ()
 
 main_menu ()
 {
-    if /sbin/ifconfig ppp0 1> /dev/null 2>&1
-    then
+    if /sbin/ifconfig ppp0 1> /dev/null 2>&1; then
         ppp=("PPP-down" "Stop PPP connection")
     else
         ppp=("PPP-up" "Start PPP connection")
     fi
 
     cameras=()
-    for ((i = 0; i < RACS_NCAMERAS; i++))
-    do
+    for ((i = 0; i < RACS_NCAMERAS; i++)); do
         idx=$((i+1))
         cameras+=("Camera-${idx}" "Test camera $idx")
     done
@@ -104,8 +99,7 @@ adc ()
     n=$((t * 2))
     adread --interval=1s > $OUTBOX/adc.csv &
     child=$!
-    for ((i = 0; i < n; i++))
-    do
+    for ((i = 0; i < n; i++)); do
         sleep 0.5
         echo $(( i*100/(n-1) ))
     done | whiptail --gauge "Collecting $t seconds of A/D data ..." 6 50 0
@@ -120,15 +114,13 @@ upload_outbox ()
 {
     (
         cd $OUTBOX
-        [ -e "adc.csv" ] && gzip adc.csv
-        [ -e "$RACS_SESSION_LOG" ] && gzip $RACS_SESSION_LOG
+        zip_non_jpeg
         wput -nv --disable-tls -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
     )
 }
 
 choice=$(main_menu)
-while [[ $? = 0 ]]
-do
+while [[ $? = 0 ]]; do
     case "$choice" in
         Camera-*)
             idx=$(cut -f2 -d- <<< "$choice")

@@ -41,19 +41,24 @@ wait_for_camera ()
 {
     local cam twait verbose limit
 
+    verbose=
+    if [[ "$1" = "-v" ]]; then
+        verbose=1
+        shift
+    fi
     cam="$1"
     twait="$2"
-    verbose="$3"
+
     limit=$(($(date +%s) + twait))
 
     until camera_up $cam
     do
         (($(date +%s) > limit)) && break
-        [ -n "$verbose" ] && \
+        [[ "$verbose" ]] && \
             echo "$(( 100 - (limit - $(date +%s))*100/twait ))"
         sleep 2
     done
-    [ -n "$verbose" ] && echo "100"
+    [[ "$verbose" ]] && echo "100"
     camera_up $cam
 }
 
