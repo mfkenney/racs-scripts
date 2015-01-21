@@ -35,3 +35,4 @@ and shuts the system down.
 - **tasks.sh** : manages the entire image acquistion and upload
 procedure.
 - **testmode.sh** : menu-driven system test script.
+- **racs_power.sh** : low-level power testing script
