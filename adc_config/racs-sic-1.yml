@@ -1,0 +1,19 @@
+---
+# Description of RACS A/D channels
+channels:
+  - name: Vbatt
+    cnum: 3
+    units: volts
+    c: [0., 3.5955]
+  - name: Ibatt
+    cnum: 4
+    units: amps
+    c: [0., 0.060]
+  - name: Temperature
+    cnum: 5
+    units: degC
+    c: [-6.02, 36.71]
+  - name: RelHumidity
+    cnum: 6
+    units: "%"
+    c: [-23.82, 48.38]
