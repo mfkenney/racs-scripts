@@ -25,8 +25,8 @@ RACS_STREAM_TIME=1
 # Maximum age (in days) of files in the OUTBOX
 RACS_MAX_AGE=3
 # Camera power switches (must be an array)
-RACS_CAMERA_POWER=( 8160_LCD_D0 8160_LCD_D1 )
+RACS_CAMERA_POWER=( 8160_LCD_D2 8160_LCD_D3 )
 # Ethernet power
-RACS_ENET_POWER=8160_LCD_D2
+RACS_ENET_POWER=8160_LCD_D1
 # Iridium modem power
-RACS_MODEM_POWER=8160_LCD_D4
+RACS_MODEM_POWER=8160_LCD_D0
