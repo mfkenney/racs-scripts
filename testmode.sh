@@ -97,7 +97,9 @@ adc ()
 {
     t="${1:-10}"
     n=$((t * 2))
-    adread --interval=1s > $OUTBOX/adc.csv &
+    adcfg=
+    [[ -f "$CFGDIR/adc.yml" ]] && adcfg="$CFGDIR/adc.yml"
+    adread --interval=1s $adcfg > $OUTBOX/adc.csv &
     child=$!
     for ((i = 0; i < n; i++)); do
         sleep 0.5

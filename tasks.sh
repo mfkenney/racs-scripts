@@ -42,8 +42,9 @@ fi
 clean_dir "$OUTBOX" "$RACS_MAX_AGE"
 
 # Start the A/D monitor and store the output in the OUTBOX.
-# FIXME: add A/D config file
-adread --interval=5s > $OUTBOX/adc.csv &
+adcfg=
+[[ -f "$CFGDIR/adc.yml" ]] && adcfg="$CFGDIR/adc.yml"
+adread --interval=5s $adcfg > $OUTBOX/adc.csv &
 child=$!
 
 # Power on the ethernet switch
