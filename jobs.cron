@@ -1,6 +1,8 @@
 MAILTO=""
+# Turn on 5V to power MF board (LCD_5V line)
+@reboot /usr/local/bin/tsctl '@localhost bus; poke16 0x20 0x181;bitset16 0x402 12'
 # Turn on the Ethernet switch
-# @reboot /usr/local/bin/tsctl @localhost dio setasync 8160_lcd_d2
+# @reboot /usr/local/bin/tsctl @localhost dio setasync 8160_lcd_d1
 # Remove "stale" inhibit file
 @reboot rm -f /tmp/INHIBIT
 # Remove old AT jobs from the queue
