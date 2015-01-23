@@ -32,7 +32,6 @@ install-config: $(CFGFILES)
 	@echo "Installing Cron jobs ..."
 	crontab $(CRONFILE)
 
-.IGNORE: install-adc-config
-install-adc-config: $(ADCFG)
+install-adc-config:
 	@echo "Installing A/D config file ..."
-	$(INSTALL) -m 644 $(ADCFG) $(CFGDIR)/adc.yml
+	-test ! -f $(ADCFG) || $(INSTALL) -m 644 $(ADCFG) $(CFGDIR)/adc.yml
