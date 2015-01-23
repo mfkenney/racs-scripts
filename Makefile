@@ -12,14 +12,13 @@ CFGFILES := defaults settings
 CRONFILE := jobs.cron
 ADCFG := adc_config/$(shell hostname -s).yml
 
-all: install
+install: dirs install-config install-bin install-adc-config
 
-.PHONY: dirs
+.PHONY: install dirs install-bin install-config install-adc-config
+
 dirs:
 	@echo "Creating data directories ..."
 	$(INSTALL) -d $(DATADIRS)
-
-install: dirs install-config install-bin install-adc-config
 
 install-bin: $(SCRIPTS)
 	@echo "Installing scripts ..."
@@ -33,6 +32,7 @@ install-config: $(CFGFILES)
 	@echo "Installing Cron jobs ..."
 	crontab $(CRONFILE)
 
+.IGNORE: install-adc-config
 install-adc-config: $(ADCFG)
 	@echo "Installing A/D config file ..."
 	$(INSTALL) -m 644 $(ADCFG) $(CFGDIR)/adc.yml
