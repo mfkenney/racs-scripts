@@ -132,6 +132,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     (
         filelist="/tmp/uploads"
         sort_arg="${RACS_REV_SORT:+-r}"
+        df -h /dev/mmcblk0p4 > disk_usage.txt
         cd $OUTBOX
         # Archive all of the non-image files
         zip_non_jpeg
