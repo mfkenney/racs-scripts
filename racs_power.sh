@@ -12,8 +12,8 @@ ID="$(hostname -s)"
 [[ -e $CFGDIR/settings ]] && . $CFGDIR/settings
 [[ -e $HOME/bin/library.sh ]] && . $HOME/bin/library.sh
 
-tags=("Camera-1" "Camera-2" "EnetSwitch" "Modem")
-switches=(${RACS_CAMERA_POWER[0]} ${RACS_CAMERA_POWER[1]} $RACS_ENET_POWER $RACS_MODEM_POWER)
+tags=("Camera-1" "Camera-2" "EnetSwitch" "Modem" "Spare-1" "Spare-2" "Spare-3" "Spare-4")
+switches=(${RACS_CAMERA_POWER[0]} ${RACS_CAMERA_POWER[1]} $RACS_ENET_POWER $RACS_MODEM_POWER 8160_LCD_D4 8160_LCD_D5 8160_LCD_D6 8160_LCD_D7)
 
 check_state ()
 {
@@ -50,7 +50,7 @@ while :; do
                       --backtitle "RACS 2.0" \
                       --cancel-button "Exit" \
                       --ok-button "Apply" \
-                      --checklist "Set power-switch state" 15 50 8 \
+                      --checklist "Set power-switch state" 15 50 12 \
                       "${list[@]}" 3>&1 1>&2 2>&3)
     [[ $? = 0 ]] || break
 
