@@ -3,7 +3,9 @@
 # Sampling interval in seconds
 RACS_INTERVAL=21600
 # Maximum number of seconds allowed for PPP connection
-RACS_PPP_TIMELIMIT=300
+RACS_PPP_LINKTIME=300
+# Maximum time in seconds to keep the PPP link up
+RACS_PPP_TIMELIMIT=900
 # NTP server hostname or IP address
 RACS_NTP_SERVER=140.142.1.8
 # NTP sync timeout in seconds
@@ -12,8 +14,6 @@ RACS_NTP_TIMEOUT=10
 RACS_FTP_SERVER=128.95.96.18
 # User account on the FTP server
 RACS_FTP_USER=ftpuser
-# Maximum number of seconds allowed for file upload
-RACS_FTP_TIMELIMIT=900
 # Rescale factor for uploaded images
 RACS_SCALE=0.5
 # Number of cameras
