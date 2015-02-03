@@ -101,20 +101,35 @@ fi
 
 # Set a time limit for the rest of the script to finish
 trap cleanup_and_shutdown ALRM
-sleep $RACS_PPP_TIMELIMIT && kill -ALRM $$ &
+sleep $RACS_PPP_TIMELIMIT && kill -ALRM $$ 2> /dev/null &
+alarm_pid=$!
 
 # Download configuration updates and the list of
 # requested full-res images to the INBOX
 if [[ "$RACS_FTP_SERVER" ]]; then
+    (
+        cd $INBOX
+        wget -T 60 -q -nH --no-parent --cut-dirs=2 \
+             --ftp-user=$RACS_FTP_USER \
+             ftp://$RACS_FTP_SERVER/outgoing/$ID/
+    )
+
+    # Need to delete the files we downloaded
     ftp -p $RACS_FTP_SERVER<<EOF 1> /dev/null 2>&1 &
 cd outgoing/$ID
-lcd $INBOX
-get updates
 delete updates
-get fullres.txt
 delete fullres.txt
 EOF
-    wait
+    child=$!
+    n=60
+    while sleep 1; do
+        kill -0 $child 2> /dev/null || break
+        if ((--n <= 0)); then
+            kill $child 2> /dev/null
+            logger -s -p "local0.warn" "Killed FTP client"
+            break
+        fi
+    done
 
     if [[ -e "$INBOX/updates" ]]; then
         mv "$INBOX/updates" "$CFGDIR"
@@ -172,4 +187,5 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     )
 fi
 
+trap - ALRM
 cleanup_and_shutdown
