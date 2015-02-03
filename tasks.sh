@@ -106,7 +106,7 @@ sleep $RACS_PPP_TIMELIMIT && kill -ALRM $$ &
 # Download configuration updates and the list of
 # requested full-res images to the INBOX
 if [[ "$RACS_FTP_SERVER" ]]; then
-    ftp -p $RACS_FTP_SERVER<<EOF
+    ftp -p $RACS_FTP_SERVER<<EOF 1> /dev/null 2>&1 &
 cd outgoing/$ID
 lcd $INBOX
 get updates
@@ -114,6 +114,8 @@ delete updates
 get fullres.txt
 delete fullres.txt
 EOF
+    wait
+
     if [[ -e "$INBOX/updates" ]]; then
         mv "$INBOX/updates" "$CFGDIR"
         . $CFGDIR/settings
