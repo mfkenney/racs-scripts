@@ -35,7 +35,7 @@ clean_dir "$OUTBOX" "$RACS_MAX_AGE"
 adcfg=
 [[ -f "$CFGDIR/adc.yml" ]] && adcfg="$CFGDIR/adc.yml"
 adread --interval=5s $adcfg > $OUTBOX/adc.csv &
-child=$!
+adc_pid=$!
 
 # Power on the ethernet switch
 power_on $RACS_ENET_POWER
@@ -146,9 +146,9 @@ EOF
 fi
 
 # Stop the A/D monitor
-if [[ "$child" ]]; then
-    kill -TERM $child
-    wait $child
+if [[ "$adc_pid" ]]; then
+    kill -TERM $adc_pid
+    wait $adc_pid
 fi
 
 # Sync clock with ntpdate
@@ -175,7 +175,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
         done | sort $sort_arg | cut -f2- -d' ' > $filelist
 
         # Start the file upload
-        wput -nv --tries=1 \
+        wput -nv --tries=2 \
              --disable-tls -B -R -i $filelist \
              ftp://$RACS_FTP_SERVER/incoming/$ID/ &
 
@@ -187,5 +187,8 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     )
 fi
 
+# Cancel the time-limit alarm
 trap - ALRM
+kill $alarm_pid 2> /dev/null
+
 cleanup_and_shutdown
