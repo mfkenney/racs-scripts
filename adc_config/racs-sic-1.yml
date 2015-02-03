@@ -4,16 +4,16 @@ channels:
   - name: Vbatt
     cnum: 3
     units: volts
-    c: [0., 3.5955]
+    c: [-0.0377, 3.6284]
   - name: Ibatt
     cnum: 4
     units: amps
-    c: [0., 0.060]
+    c: [-0.0014, 0.6048]
   - name: Temperature
     cnum: 5
     units: degC
-    c: [-6.02, 36.71]
+    c: [185.946, -66.1306, -1.70711]
   - name: RelHumidity
     cnum: 6
     units: "%"
-    c: [-23.82, 48.38]
+    c: [-23.821, 31.371]
