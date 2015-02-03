@@ -141,7 +141,7 @@ if [[ "$child" ]]; then
 fi
 
 # Sync clock with ntpdate
-sudo ntpdate -b $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
+sudo ntpdate -b -t $RACS_NTP_TIMEOUT $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
 
 # Upload files from the OUTBOX. Files are removed after
 # they are successfully transfered.

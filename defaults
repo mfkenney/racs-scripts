@@ -6,6 +6,8 @@ RACS_INTERVAL=21600
 RACS_PPP_TIMELIMIT=300
 # NTP server hostname or IP address
 RACS_NTP_SERVER=140.142.1.8
+# NTP sync timeout in seconds
+RACS_NTP_TIMEOUT=10
 # FTP server hostname or IP address
 RACS_FTP_SERVER=128.95.96.18
 # User account on the FTP server
