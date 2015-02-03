@@ -93,3 +93,25 @@ zip_non_jpeg ()
     done
     zip -m -T "$name" "${files[@]}" 1>&2 && echo "$name"
 }
+
+# Wait for PPP link or timeout
+ppp_wait ()
+{
+    local n
+
+    n=$1
+    [[ $n ]] || return 1
+    while sleep 1; do
+        /sbin/ifconfig ppp0 2> /dev/null | grep addr 1> /dev/null 2>&1 && break
+        if ((--n <= 0)); then
+
+            return 1
+        fi
+    done
+    return 0
+}
+
+ppp_check ()
+{
+    /sbin/ifconfig ppp0 2> /dev/null | grep addr 1> /dev/null 2>&1
+}

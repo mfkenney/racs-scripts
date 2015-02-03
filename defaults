@@ -2,12 +2,14 @@
 #
 # Sampling interval in seconds
 RACS_INTERVAL=21600
+# Maximum number of seconds allowed for PPP connection
+RACS_PPP_TIMELIMIT=300
 # NTP server hostname or IP address
-RACS_NTP_SERVER=time1.u.washington.edu
+RACS_NTP_SERVER=140.142.1.8
 # FTP server hostname or IP address
-RACS_FTP_SERVER=pscftp.apl.washington.edu
+RACS_FTP_SERVER=128.95.96.18
 # User account on the FTP server
-RACS_FTP_USER=racs
+RACS_FTP_USER=ftpuser
 # Maximum number of seconds allowed for file upload
 RACS_FTP_TIMELIMIT=900
 # Rescale factor for uploaded images
@@ -24,6 +26,10 @@ RACS_CAMERA_WARMUP=0
 RACS_STREAM_TIME=1
 # Maximum age (in days) of files in the OUTBOX
 RACS_MAX_AGE=3
+# By default, the oldest file in the OUTBOX is uploaded
+# first. Setting this variable to any non-null value will
+# cause the newest file to uploaded first.
+RACS_REV_SORT=
 # Camera power switches (must be an array)
 RACS_CAMERA_POWER=( 8160_LCD_D2 8160_LCD_D3 )
 # Ethernet power

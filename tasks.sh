@@ -89,8 +89,25 @@ fi
 
 power_on "$RACS_MODEM_POWER"
 log_event "INFO" "Modem powered on"
-# TODO: Establish PPP link
+# Establish PPP link
 log_event "INFO" "Initiating PPP link"
+sudo pon iridium persist
+
+# Wait for link to be established
+if ppp_wait $RACS_PPP_TIMELIMIT; then
+    log_event "INFO" "PPP link up"
+    sudo ip route add $RACS_FTP_SERVER/32 dev ppp0
+    sudo ip route add $RACS_NTP_SERVER/32 dev ppp0
+else
+    logger -p "local0.emerg" "Cannot establish PPP link"
+    # If the link cannot be established, power off the
+    # modem and bailout. If we are in autonomous mode,
+    # shutdown until the next interval.
+    sudo poff iridium
+    power_off "$RACS_MODEM_POWER"
+    [[ "$RACS_NOSLEEP" ]] && exit 1
+    set_alarm.sh $RACS_INTERVAL
+fi
 
 # Download configuration updates and the list of
 # requested full-res images to the INBOX
@@ -164,6 +181,10 @@ if [[ "$RACS_FTP_SERVER" ]]; then
         wait $child
     )
 fi
+
+# Bring down PPP link and power-down the modem
+sudo poff iridium
+power_off "$RACS_MODEM_POWER"
 
 # Shutdown until next sample time
 [[ "$RACS_NOSLEEP" ]] || set_alarm.sh $RACS_INTERVAL
