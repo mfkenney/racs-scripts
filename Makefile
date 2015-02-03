@@ -29,6 +29,8 @@ install-config: $(CFGFILES)
 	@echo "Installing configuration files ..."
 	$(INSTALL) -d $(CFGDIR)
 	$(INSTALL) -m 644 $^ $(CFGDIR)/
+
+install-cron: $(CRONFILE)
 	@echo "Installing Cron jobs ..."
 	crontab $(CRONFILE)
 
