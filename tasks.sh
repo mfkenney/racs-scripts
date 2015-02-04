@@ -11,10 +11,12 @@ ID="$(hostname -s)"
 
 [[ -e $CFGDIR/settings ]] && . $CFGDIR/settings
 [[ -e $HOME/bin/library.sh ]] && . $HOME/bin/library.sh
+adc_pid=
 
 cleanup_and_shutdown ()
 {
     logger -s -p "local0.info" "Shutting down"
+    [[ "$adc_pid" ]] && kill $adc_pid 2> /dev/null
     # Bring down PPP link and power-down the modem
     sudo poff iridium
     power_off "$RACS_MODEM_POWER"
@@ -147,6 +149,7 @@ fi
 if [[ "$adc_pid" ]]; then
     kill -TERM $adc_pid
     wait $adc_pid
+    adc_pid=
 fi
 
 # Sync clock with ntpdate
