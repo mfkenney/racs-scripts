@@ -39,11 +39,12 @@ adcfg=
 adread --interval=5s $adcfg > $OUTBOX/adc.csv &
 adc_pid=$!
 
-# Power on the ethernet switch
-power_on $RACS_ENET_POWER
-# Power on the cameras
-log_event "INFO" "Powering on cameras"
-power_on "${RACS_CAMERA_POWER[@]}"
+# Power on the ethernet switch and cameras
+(( RACS_NCAMERAS > 0 )) && {
+    power_on $RACS_ENET_POWER
+    log_event "INFO" "Powering on cameras"
+    power_on "${RACS_CAMERA_POWER[@]}"
+}
 
 # Wait for all cameras to boot
 up=()
@@ -90,13 +91,7 @@ if ppp_wait $RACS_PPP_LINKTIME; then
     log_event "INFO" "PPP link up"
 else
     logger -s -p "local0.emerg" "Cannot establish PPP link"
-    # If the link cannot be established, power off the
-    # modem and bailout. If we are in autonomous mode,
-    # shutdown until the next interval.
-    sudo poff iridium
-    power_off "$RACS_MODEM_POWER"
-    [[ "$RACS_NOSLEEP" ]] && exit 1
-    set_alarm.sh $RACS_INTERVAL
+    cleanup_and_shutdown
 fi
 
 # Set a time limit for the rest of the script to finish
