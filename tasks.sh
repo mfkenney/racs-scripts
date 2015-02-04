@@ -86,8 +86,6 @@ sudo pon iridium persist
 # Wait for link to be established
 if ppp_wait $RACS_PPP_LINKTIME; then
     log_event "INFO" "PPP link up"
-    sudo ip route add $RACS_FTP_SERVER/32 dev ppp0
-    sudo ip route add $RACS_NTP_SERVER/32 dev ppp0
 else
     logger -s -p "local0.emerg" "Cannot establish PPP link"
     # If the link cannot be established, power off the
