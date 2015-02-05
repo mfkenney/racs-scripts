@@ -109,26 +109,17 @@ if [[ "$RACS_FTP_SERVER" ]]; then
              ftp://$RACS_FTP_SERVER/outgoing/$ID/
     )
 
-    # Need to delete the files we downloaded
-    ftp -p $RACS_FTP_SERVER<<EOF 1> /dev/null 2>&1 &
-cd outgoing/$ID
-delete updates
-delete fullres.txt
-EOF
-    child=$!
-    n=60
-    while sleep 1; do
-        kill -0 $child 2> /dev/null || break
-        if ((--n <= 0)); then
-            kill $child 2> /dev/null
-            logger -s -p "local0.warn" "Killed FTP client"
-            break
-        fi
-    done
-
+    # Wget has no provision for deleting files from the
+    # server after it has downloaded them so we need to
+    # build an ftp command file to do this.
+    cmdfile="/tmp/ftp.scr"
+    files=0
+    echo "cd outgoing/$ID" > $cmdfile
     if [[ -e "$INBOX/updates" ]]; then
         mv "$INBOX/updates" "$CFGDIR"
         . $CFGDIR/settings
+        echo "delete updates" >> $cmdfile
+        ((files++))
     fi
 
     # Locate full-res images and add to OUTBOX
@@ -137,6 +128,24 @@ EOF
             findimg.sh "$name"
         done <"$INBOX/fullres.txt"
         rm -f "$INBOX/fullres.txt"
+        echo "delete fullres.txt" >> $cmdfile
+        ((files++))
+    fi
+
+    # Now we need to delete the files that we downloaded
+    if ((files > 0)); then
+        ftp -p $RACS_FTP_SERVER < $cmdfile 1> /dev/null 2>&1 &
+        child=$!
+        n=60
+        while sleep 1; do
+            kill -0 $child 2> /dev/null || break
+            if ((--n <= 0)); then
+                kill $child 2> /dev/null
+                wait $child
+                logger -s -p "local0.warn" "Killed FTP client"
+                break
+            fi
+        done
     fi
 fi
 
