@@ -68,7 +68,7 @@ camera_menu ()
 
 main_menu ()
 {
-    if /sbin/ifconfig ppp0 1> /dev/null 2>&1; then
+    if ppp_check; then
         ppp=("PPP-down" "Stop PPP connection")
     else
         ppp=("PPP-up" "Start PPP connection")
@@ -91,6 +91,40 @@ main_menu ()
     rval=$?
     echo "$choice"
     return $rval
+}
+
+start_ppp ()
+{
+    [[ -e /dev/ttyUSB0 ]] || {
+        power_on PA9
+        file_wait -v /dev/ttyUSB0 30 |\
+            whiptail --gauge "Waiting for USB-serial adapter..." 6 50 0
+    }
+
+    [[ ! -e /dev/ttyUSB0 ]] && {
+        whiptail --title ERROR \
+                 --backtitle "RACS 2.0" \
+                 --msgbox "USB-serial device not found!" 8 50
+        return 1
+    }
+
+    power_on "$RACS_MODEM_POWER"
+    sudo pon iridium persist
+    ppp_wait -v $RACS_PPP_LINKTIME |\
+        whiptail --gauge "Waiting for PPP link..." 6 50 0
+    ppp_check || {
+        whiptail --title ERROR \
+                 --backtitle "RACS 2.0" \
+                 --msgbox "PPP link failed!" 8 50
+        return 1
+    }
+
+    return 0
+}
+
+stop_ppp ()
+{
+    sudo poff iridium
 }
 
 adc ()
@@ -128,10 +162,11 @@ while [[ $? = 0 ]]; do
             idx=$(cut -f2 -d- <<< "$choice")
             camera_menu $idx
             ;;
-        PPP-*)
-            whiptail --title ERROR \
-                     --backtitle "RACS 2.0" \
-                     --msgbox "Not implemented yet" 8 50
+        PPP-up)
+            start_ppp
+            ;;
+        PPP-down)
+            stop_ppp
             ;;
         Upload)
             upload_outbox
