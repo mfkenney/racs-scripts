@@ -104,7 +104,6 @@ ppp_wait ()
     while sleep 1; do
         /sbin/ifconfig ppp0 2> /dev/null | grep addr 1> /dev/null 2>&1 && break
         if ((--n <= 0)); then
-
             return 1
         fi
     done
@@ -114,4 +113,21 @@ ppp_wait ()
 ppp_check ()
 {
     /sbin/ifconfig ppp0 2> /dev/null | grep addr 1> /dev/null 2>&1
+}
+
+# Wait for a file to appear or timeout
+file_wait ()
+{
+    local n file
+
+    file="$1"
+    n=$2
+    [[ $file && $n ]] || return 1
+    while sleep 1; do
+        [[ -e "$file" ]] && break
+        if ((--n <= 0)); then
+            return 1
+        fi
+    done
+    return 0
 }
