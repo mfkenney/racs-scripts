@@ -97,16 +97,26 @@ zip_non_jpeg ()
 # Wait for PPP link or timeout
 ppp_wait ()
 {
-    local n
+    local n verbose limit
+
+    verbose=
+    if [[ "$1" = "-v" ]]; then
+        verbose=1
+        shift
+    fi
 
     n=$1
     [[ $n ]] || return 1
+    limit=$n
     while sleep 1; do
         /sbin/ifconfig ppp0 2> /dev/null | grep addr 1> /dev/null 2>&1 && break
         if ((--n <= 0)); then
             return 1
         fi
+        [[ "$verbose" ]] && \
+            echo "$(( (limit - n)*100/limit ))"
     done
+    [[ "$verbose" ]] && echo "100"
     return 0
 }
 
@@ -118,16 +128,26 @@ ppp_check ()
 # Wait for a file to appear or timeout
 file_wait ()
 {
-    local n file
+    local n file verbose limit
+
+    verbose=
+    if [[ "$1" = "-v" ]]; then
+        verbose=1
+        shift
+    fi
 
     file="$1"
     n=$2
     [[ $file && $n ]] || return 1
+    limit=$n
     while sleep 1; do
         [[ -e "$file" ]] && break
         if ((--n <= 0)); then
             return 1
         fi
+        [[ "$verbose" ]] && \
+            echo "$(( (limit - n)*100/limit ))"
     done
+    [[ "$verbose" ]] && echo "100"
     return 0
 }
