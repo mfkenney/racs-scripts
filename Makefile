@@ -7,7 +7,7 @@ CFGDIR := $(HOME)/config
 BINDIR := $(HOME)/bin
 DATADIRS := $(HOME)/archive $(HOME)/snapshots $(HOME)/INBOX $(HOME)/OUTBOX
 
-SCRIPTS := $(wildcard *.sh)
+SCRIPTS := $(subst merge.sh,,$(wildcard *.sh))
 CFGFILES := defaults settings
 CRONFILE := jobs.cron
 ADCFG := adc_config/$(shell hostname -s).yml

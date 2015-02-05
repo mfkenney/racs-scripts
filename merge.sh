@@ -15,6 +15,11 @@ else
     DATE=date
 fi
 
+[[ -e "$LOG" && -e "$ADC" ]] || {
+    echo "Session-log and/or ADC file not found" 1>&2
+    exit 1
+}
+
 # Convert date/time in session-log to POSIX timestamps
 # and merge with ADC data file. CSV header is removed.
 while IFS=, read dt event; do
