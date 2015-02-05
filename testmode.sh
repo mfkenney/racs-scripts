@@ -42,6 +42,12 @@ camera_menu ()
                 power_on $sw
                 wait_for_camera -v "camera-${idx}" $RACS_CAMERA_BOOTTIME |\
                     whiptail --gauge "Waiting for camera to start..." 6 50 0
+                camera_up "camera-${idx}" || {
+                    whiptail --title ERROR \
+                             --backtitle "RACS 2.0" \
+                             --msgbox "Camera-${idx} not found!" 8 50
+                    power_off $sw
+                }
                 ;;
             Off)
                 power_off $sw
@@ -110,12 +116,13 @@ start_ppp ()
 
     power_on "$RACS_MODEM_POWER"
     sudo pon iridium persist
-    ppp_wait -v $RACS_PPP_LINKTIME |\
+    ppp_wait -v 120 |\
         whiptail --gauge "Waiting for PPP link..." 6 50 0
     ppp_check || {
         whiptail --title ERROR \
                  --backtitle "RACS 2.0" \
                  --msgbox "PPP link failed!" 8 50
+        sudo poff iridium
         return 1
     }
 
