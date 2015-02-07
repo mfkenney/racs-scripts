@@ -114,7 +114,7 @@ alarm_pid=$!
 if [[ "$RACS_FTP_SERVER" ]]; then
     (
         cd $INBOX
-        wget -T 60 -q -nH --no-parent --cut-dirs=2 \
+        wget -T 60 -q -nH -r --no-parent --cut-dirs=2 \
              --ftp-user=$RACS_FTP_USER \
              ftp://$RACS_FTP_SERVER/outgoing/$ID/
     )
