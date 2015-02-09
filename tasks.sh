@@ -36,7 +36,7 @@ clean_dir "$OUTBOX" "$RACS_MAX_AGE"
 # Start the A/D monitor and store the output in the OUTBOX.
 adcfg=
 [[ -f "$CFGDIR/adc.yml" ]] && adcfg="$CFGDIR/adc.yml"
-adread --interval=5s $adcfg > $OUTBOX/adc.csv &
+adread --interval=$RACS_ADC_INTERVAL $adcfg > $OUTBOX/adc.csv &
 adc_pid=$!
 
 # Power on the ethernet switch and cameras

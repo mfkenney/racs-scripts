@@ -32,6 +32,8 @@ RACS_MAX_AGE=3
 # first. Setting this variable to any non-null value will
 # cause the newest file to uploaded first.
 RACS_REV_SORT=
+# A/D sampling interval (value and units)
+RACS_ADC_INTERVAL=5s
 # Camera power switches (must be an array)
 RACS_CAMERA_POWER=( 8160_LCD_D2 8160_LCD_D3 )
 # Ethernet power
