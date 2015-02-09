@@ -1,5 +1,14 @@
 ---
-# Description of RACS A/D channels
+# Description of RACS A/D channels.
+#
+# name: channel name
+# cnum: A/D channel number (1-based)
+# units: measurement units
+# c: coefficients of the calibration polynomial
+#
+# The calibration polynomial converts A/D voltage
+# to the measurement units.
+#
 channels:
   - name: Vbatt
     cnum: 3
