@@ -42,6 +42,8 @@ while ! ping -q -c 1 -n $CTRL_HOST 1> /dev/null 2>&1; do
     fi
 done
 
+logger -p "local0.info" "Control host detected, delaying start-up"
+
 # Control host found, allow 2 minutes for user to log-in
 echo "$HOME/bin/tasks.sh 1> /dev/null 2>&1" |\
     /usr/bin/at 'now + 2 minutes'
