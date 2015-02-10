@@ -64,10 +64,16 @@ else
     # Allow additional warm-up time
     sleep $RACS_CAMERA_WARMUP
     # Take a snapshot from each one and power it off
+    procs=()
     for c in "${up[@]}"; do
         idx=$(cut -f2 -d- <<< "$c")
         i=$((idx - 1))
-        snapshot.sh "$c" "${RACS_CAMERA_POWER[i]}"
+        snapshot.sh "$c" "${RACS_CAMERA_POWER[i]}" &
+        procs+=($!)
+    done
+    # Wait for the snapshot processes to finish
+    for p in "${procs[@]}"; do
+        wait $p
     done
 fi
 
