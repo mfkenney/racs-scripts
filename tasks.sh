@@ -38,6 +38,7 @@ adcfg=
 [[ -f "$CFGDIR/adc.yml" ]] && adcfg="$CFGDIR/adc.yml"
 adread --interval=$RACS_ADC_INTERVAL $adcfg > $OUTBOX/adc.csv &
 adc_pid=$!
+sleep 1
 
 # Power on the ethernet switch and cameras
 (( RACS_NCAMERAS > 0 )) && {
