@@ -3,9 +3,9 @@
 # Sampling interval in seconds
 RACS_INTERVAL=21600
 # Maximum number of seconds allowed for PPP connection
-RACS_PPP_LINKTIME=300
+RACS_PPP_LINKTIME=180
 # Maximum time in seconds to keep the PPP link up
-RACS_PPP_TIMELIMIT=900
+RACS_PPP_TIMELIMIT=720
 # NTP server hostname or IP address
 RACS_NTP_SERVER=140.142.1.8
 # NTP sync timeout in seconds

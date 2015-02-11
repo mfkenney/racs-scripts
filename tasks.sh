@@ -12,12 +12,14 @@ ID="$(hostname -s)"
 [[ -e $CFGDIR/settings ]] && . $CFGDIR/settings
 [[ -e $HOME/bin/library.sh ]] && . $HOME/bin/library.sh
 adc_pid=
+wput_pid=
 
 cleanup_and_shutdown ()
 {
     logger -s -p "local0.info" "Shutting down"
     [[ "$adc_pid" ]] && kill $adc_pid 2> /dev/null
-    # Bring down PPP link and power-down the modem
+    [[ "$wput_pid" ]] && kill $wput_pid 2> /dev/null
+    # Bring down PPP link and power-off the modem
     sudo poff iridium
     power_off "$RACS_MODEM_POWER"
 
@@ -119,12 +121,9 @@ alarm_pid=$!
 # Download configuration updates and the list of
 # requested full-res images to the INBOX
 if [[ "$RACS_FTP_SERVER" ]]; then
-    (
-        cd $INBOX
-        wget -T 60 -q -nH -r --no-parent --cut-dirs=2 \
-             --ftp-user=$RACS_FTP_USER \
-             ftp://$RACS_FTP_SERVER/outgoing/$ID/
-    )
+    wget -t 2 -T 30 -q -P $INBOX -nH -r --no-parent --cut-dirs=2 \
+         --ftp-user=$RACS_FTP_USER \
+         ftp://$RACS_FTP_SERVER/outgoing/$ID/
 
     # Wget has no provision for deleting files from the
     # server after it has downloaded them so we need to
@@ -198,15 +197,16 @@ if [[ "$RACS_FTP_SERVER" ]]; then
         done | sort $sort_arg | cut -f2- -d' ' > $filelist
 
         # Start the file upload
-        wput -nv --tries=2 \
+        wput -nv --tries=1 \
              --disable-tls -B -R -i $filelist \
              ftp://$RACS_FTP_SERVER/incoming/$ID/ &
 
         # Wait for the file transfer to complete. Running wput
         # asynchronously allows us to be interrupted by the
         # PPP_TIMELIMIT alarm immediately.
-        child=$!
-        wait $child
+        wput_pid=$!
+        wait $wput_pid
+        wput_pid=
     )
 fi
 
