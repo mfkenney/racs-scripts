@@ -158,7 +158,8 @@ upload_outbox ()
     (
         cd $OUTBOX
         zip_non_jpeg
-        wput -nv --disable-tls -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
+        wput --tries=1 -nv --disable-tls \
+             -B -R * ftp://$RACS_FTP_SERVER/incoming/$ID/
     )
 }
 
