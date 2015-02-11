@@ -7,7 +7,7 @@ RACS_PPP_LINKTIME=180
 # Maximum time in seconds to keep the PPP link up
 RACS_PPP_TIMELIMIT=720
 # NTP server hostname or IP address
-RACS_NTP_SERVER=140.142.1.8
+RACS_NTP_SERVER=192.5.41.40
 # NTP sync timeout in seconds
 RACS_NTP_TIMEOUT=10
 # FTP server hostname or IP address
