@@ -22,6 +22,8 @@ RACS_NCAMERAS=2
 RACS_CAMERA_BOOTTIME=30
 # Extra camera warm-up time in seconds
 RACS_CAMERA_WARMUP=0
+# Iridium modem warm-up time
+RACS_MODEM_WARMUP=5
 # Number of seconds to run the video stream 1 is usually
 # sufficient but this may need to be increased in low
 # light conditions

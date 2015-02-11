@@ -101,6 +101,8 @@ file_wait /dev/ttyUSB0 30 || {
 
 power_on "$RACS_MODEM_POWER"
 log_event "INFO" "Modem powered on"
+sleep $RACS_MODEM_WARMUP
+
 # Establish PPP link
 log_event "INFO" "Initiating PPP link"
 sudo pon iridium persist
@@ -111,6 +113,7 @@ if ppp_wait $RACS_PPP_LINKTIME; then
 else
     logger -s -p "local0.emerg" "Cannot establish PPP link"
     cleanup_and_shutdown
+    exit 1
 fi
 
 # Set a time limit for the rest of the script to finish
