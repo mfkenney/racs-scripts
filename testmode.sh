@@ -115,7 +115,15 @@ start_ppp ()
     }
 
     power_on "$RACS_MODEM_POWER"
+
+    n=$RACS_MODEM_WARMUP
+    while sleep 1; do
+        echo "$((100 - n*100/RACS_MODEM_WARMUP))"
+        ((--n <= 0)) && break
+    done | whiptail --gauge "Waiting for modem..." 6 50 0
+
     sudo pon iridium persist
+
     ppp_wait -v 120 |\
         whiptail --gauge "Waiting for PPP link..." 6 50 0
     ppp_check || {
