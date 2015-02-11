@@ -183,6 +183,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
         filelist="/tmp/uploads"
         sort_arg="${RACS_REV_SORT:+-r}"
         cd $OUTBOX
+        [[ -e "$CFGDIR/updates" ]] && cp $CFGDIR/updates $OUTBOX
         df -h /dev/mmcblk0p4 > disk_usage.txt
 
         # Archive all of the non-image files
