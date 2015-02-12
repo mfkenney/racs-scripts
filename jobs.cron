@@ -3,5 +3,5 @@ MAILTO=""
 @reboot rm -f /tmp/INHIBIT
 # Remove old AT jobs from the queue
 @reboot atq -q = | cut -f1 | xargs atrm 1> /dev/null 2>&1
-# Start the tasks after a 2 minute delay
-@reboot echo "$HOME/bin/tasks.sh 1> /dev/null 2>&1" | /usr/bin/at 'now + 2 minutes'
+# Start the tasks immediately or delay to allow user login
+@reboot $HOME/bin/modecheck.sh 1> /dev/null 2>&1
