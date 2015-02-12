@@ -110,6 +110,7 @@ sudo pon iridium persist
 # Wait for link to be established
 if ppp_wait $RACS_PPP_LINKTIME; then
     log_event "INFO" "PPP link up"
+    logger -s -p "local0.info" "PPP link up"
 else
     logger -s -p "local0.emerg" "Cannot establish PPP link"
     cleanup_and_shutdown
@@ -124,6 +125,7 @@ alarm_pid=$!
 # Download configuration updates and the list of
 # requested full-res images to the INBOX
 if [[ "$RACS_FTP_SERVER" ]]; then
+    log_event "INFO" "Checking for configuration updates"
     wget -t 2 -T 30 -q -P $INBOX -nH -r --no-parent --cut-dirs=2 \
          --ftp-user=$RACS_FTP_USER \
          ftp://$RACS_FTP_SERVER/outgoing/$ID/
@@ -200,7 +202,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
         done | sort $sort_arg | cut -f2- -d' ' > $filelist
 
         # Start the file upload
-        wput -nv --tries=1 \
+        wput -nv --tries=1 --waitretry=2 \
              --disable-tls -B -R -i $filelist \
              ftp://$RACS_FTP_SERVER/incoming/$ID/ &
 
