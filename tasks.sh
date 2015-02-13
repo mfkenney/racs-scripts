@@ -192,25 +192,28 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     # Archive all of the non-image files
     zip_non_jpeg
 
-    # Sort files in timestamp order, oldest first by default. The
-    # creation timestamp is incorporated into the filename so we
-    # use that rather than the filesystem time.
-    for f in *; do
-        t=$(cut -f2-3 -d_ <<< "${f%.*}")
-        [[ $t ]] && echo "$t $f"
-    done | sort $sort_arg | cut -f2- -d' ' > $filelist
+    while 1; do
+        # Sort files in timestamp order, oldest first by default. The
+        # creation timestamp is incorporated into the filename so we
+        # use that rather than the filesystem time.
+        for f in *; do
+            t=$(cut -f2-3 -d_ <<< "${f%.*}")
+            [[ $t ]] && echo "$t $f"
+        done | sort $sort_arg | cut -f2- -d' ' > $filelist
 
-    # Start the file upload
-    wput -nv --tries=2 \
-         --disable-tls -B -R -i $filelist \
-         ftp://$RACS_FTP_SERVER/incoming/$ID/ &
+        # Start the file upload
+        wput -nv --tries=2 \
+             --disable-tls -B -R -i $filelist \
+             ftp://$RACS_FTP_SERVER/incoming/$ID/ &
 
-    # Wait for the file transfer to complete. Running wput
-    # asynchronously allows us to be interrupted by the
-    # PPP_TIMELIMIT alarm immediately.
-    wput_pid=$!
-    wait $wput_pid
-    wput_pid=
+        # Wait for the file transfer to complete. Running wput
+        # asynchronously allows us to be interrupted by the
+        # PPP_TIMELIMIT alarm immediately.
+        wput_pid=$!
+        wait $wput_pid
+        [[ "$?" = "0" ]] && break
+        wput_pid=
+    done
 fi
 
 # Cancel the time-limit alarm
