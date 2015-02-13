@@ -183,36 +183,34 @@ sudo ntpdate -b -t $RACS_NTP_TIMEOUT $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
 # Upload files from the OUTBOX. Files are removed after
 # they are successfully transfered.
 if [[ "$RACS_FTP_SERVER" ]]; then
-    (
-        filelist="/tmp/uploads"
-        sort_arg="${RACS_REV_SORT:+-r}"
-        cd $OUTBOX
-        [[ -e "$CFGDIR/updates" ]] && cp $CFGDIR/updates $OUTBOX
-        df -h /dev/mmcblk0p4 > disk_usage.txt
+    filelist="/tmp/uploads"
+    sort_arg="${RACS_REV_SORT:+-r}"
+    cd $OUTBOX
+    [[ -e "$CFGDIR/updates" ]] && cp $CFGDIR/updates $OUTBOX
+    df -h /dev/mmcblk0p4 > disk_usage.txt
 
-        # Archive all of the non-image files
-        zip_non_jpeg
+    # Archive all of the non-image files
+    zip_non_jpeg
 
-        # Sort files in timestamp order, oldest first by default. The
-        # creation timestamp is incorporated into the filename so we
-        # use that rather than the filesystem time.
-        for f in *; do
-            t=$(cut -f2-3 -d_ <<< "${f%.*}")
-            [[ $t ]] && echo "$t $f"
-        done | sort $sort_arg | cut -f2- -d' ' > $filelist
+    # Sort files in timestamp order, oldest first by default. The
+    # creation timestamp is incorporated into the filename so we
+    # use that rather than the filesystem time.
+    for f in *; do
+        t=$(cut -f2-3 -d_ <<< "${f%.*}")
+        [[ $t ]] && echo "$t $f"
+    done | sort $sort_arg | cut -f2- -d' ' > $filelist
 
-        # Start the file upload
-        wput -nv --tries=1 --waitretry=2 \
-             --disable-tls -B -R -i $filelist \
-             ftp://$RACS_FTP_SERVER/incoming/$ID/ &
+    # Start the file upload
+    wput -nv --tries=2 \
+         --disable-tls -B -R -i $filelist \
+         ftp://$RACS_FTP_SERVER/incoming/$ID/ &
 
-        # Wait for the file transfer to complete. Running wput
-        # asynchronously allows us to be interrupted by the
-        # PPP_TIMELIMIT alarm immediately.
-        wput_pid=$!
-        wait $wput_pid
-        wput_pid=
-    )
+    # Wait for the file transfer to complete. Running wput
+    # asynchronously allows us to be interrupted by the
+    # PPP_TIMELIMIT alarm immediately.
+    wput_pid=$!
+    wait $wput_pid
+    wput_pid=
 fi
 
 # Cancel the time-limit alarm
