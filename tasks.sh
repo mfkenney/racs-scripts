@@ -202,7 +202,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
         done | sort $sort_arg | cut -f2- -d' ' > $filelist
 
         # Start the file upload
-        wput -nv --tries=2 \
+        wput -nv --tries=$RACS_FTP_TRIES \
              --disable-tls -B -R -i $filelist \
              ftp://$RACS_FTP_SERVER/incoming/$ID/ &
 
@@ -211,6 +211,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
         # PPP_TIMELIMIT alarm immediately.
         wput_pid=$!
         wait $wput_pid
+        # If wput exits without error, break out of the loop.
         [[ "$?" = "0" ]] && break
         wput_pid=
     done
