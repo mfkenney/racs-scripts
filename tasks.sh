@@ -89,15 +89,17 @@ if [[ ! "$RACS_NOSLEEP" ]]; then
     log_event "INFO" "Ethernet switch powered off"
 fi
 
-# Enable USB
-power_on PA9
-# Allow 30 seconds for USB-serial device node initialization
-file_wait /dev/ttyUSB0 30 || {
-    logger -s -p "local0.emerg" "No USB-serial device"
-    # No need to bail-out here, as it might "appear" before
-    # the PPP process starts. If it doesn't exist, the PPP
-    # link will fail and the script will exit.
-}
+if [[ "$RACS_USE_USB" ]]; then
+    # Enable USB
+    power_on PA9
+    # Allow 30 seconds for USB-serial device node initialization
+    file_wait /dev/ttyUSB0 30 || {
+        logger -s -p "local0.emerg" "No USB-serial device"
+        # No need to bail-out here, as it might "appear" before
+        # the PPP process starts. If it doesn't exist, the PPP
+        # link will fail and the script will exit.
+    }
+fi
 
 power_on "$RACS_MODEM_POWER"
 log_event "INFO" "Modem powered on"

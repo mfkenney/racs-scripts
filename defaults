@@ -44,3 +44,5 @@ RACS_CAMERA_POWER=( 8160_LCD_D2 8160_LCD_D3 )
 RACS_ENET_POWER=8160_LCD_D1
 # Iridium modem power
 RACS_MODEM_POWER=8160_LCD_D0
+# Are we using usb-serial for modem connection
+RACS_USE_USB=
