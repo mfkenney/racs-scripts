@@ -194,7 +194,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     # Archive all of the non-image files
     zip_non_jpeg
 
-    while 1; do
+    while true; do
         # Sort files in timestamp order, oldest first by default. The
         # creation timestamp is incorporated into the filename so we
         # use that rather than the filesystem time.
