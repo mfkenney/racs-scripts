@@ -30,10 +30,10 @@ RACS_MODEM_WARMUP=5
 RACS_STREAM_TIME=1
 # Maximum age (in days) of files in the OUTBOX
 RACS_MAX_AGE=3
-# By default, the oldest file in the OUTBOX is uploaded
-# first. Setting this variable to any non-null value will
-# cause the newest file to uploaded first.
-RACS_REV_SORT=
+# By default, the newest file in the OUTBOX is uploaded
+# first. Setting this variable to the empty value will
+# cause the oldest file to be uploaded first.
+RACS_REV_SORT=1
 # A/D sampling interval (value and units)
 RACS_ADC_INTERVAL=5s
 # Camera power switches (must be an array)
