@@ -124,25 +124,39 @@ trap cleanup_and_shutdown ALRM
 sleep $RACS_PPP_TIMELIMIT && kill -ALRM $$ 2> /dev/null &
 alarm_pid=$!
 
+# Command file for lftp
+cmdfile="/tmp/lftp.cmds"
+cat<<EOF > $cmdfile
+set ftp:ssl-allow no
+set ftp:use-abor no
+open $RACS_FTP_SERVER
+cd outgoing/$ID
+get -E updates -o $INBOX/
+get -E fullres.txt -o $INBOX/
+bye
+EOF
+
 # Download configuration updates and the list of
 # requested full-res images to the INBOX
 if [[ "$RACS_FTP_SERVER" ]]; then
     log_event "INFO" "Checking for configuration updates"
-    wget -t 2 -T 30 -q -P $INBOX -nH -r --no-parent --cut-dirs=2 \
-         --ftp-user=$RACS_FTP_USER \
-         ftp://$RACS_FTP_SERVER/outgoing/$ID/
 
-    # Wget has no provision for deleting files from the
-    # server after it has downloaded them so we need to
-    # build an ftp command file to do this.
-    cmdfile="/tmp/ftp.scr"
-    files=0
-    echo "cd outgoing/$ID" > $cmdfile
+    lftp -f $cmdfile &
+    child=$!
+    n=90
+    while sleep 1; do
+        kill -0 $child 2> /dev/null || break
+        if ((--n <= 0)); then
+            kill $child 2> /dev/null
+            wait $child
+            logger -s -p "local0.warn" "Killed FTP client"
+            break
+        fi
+    done
+
     if [[ -e "$INBOX/updates" ]]; then
         mv "$INBOX/updates" "$CFGDIR"
         . $CFGDIR/settings
-        echo "delete updates" >> $cmdfile
-        ((files++))
     fi
 
     # Locate full-res images and add to OUTBOX
@@ -151,24 +165,6 @@ if [[ "$RACS_FTP_SERVER" ]]; then
             findimg.sh "$name"
         done <"$INBOX/fullres.txt"
         rm -f "$INBOX/fullres.txt"
-        echo "delete fullres.txt" >> $cmdfile
-        ((files++))
-    fi
-
-    # Now we need to delete the files that we downloaded
-    if ((files > 0)); then
-        ftp -p $RACS_FTP_SERVER < $cmdfile 1> /dev/null 2>&1 &
-        child=$!
-        n=60
-        while sleep 1; do
-            kill -0 $child 2> /dev/null || break
-            if ((--n <= 0)); then
-                kill $child 2> /dev/null
-                wait $child
-                logger -s -p "local0.warn" "Killed FTP client"
-                break
-            fi
-        done
     fi
 fi
 
@@ -185,7 +181,6 @@ sudo ntpdate -b -t $RACS_NTP_TIMEOUT $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
 # Upload files from the OUTBOX. Files are removed after
 # they are successfully transfered.
 if [[ "$RACS_FTP_SERVER" ]]; then
-    cmdfile="/tmp/lftp.cmds"
     sort_arg="${RACS_REV_SORT:+-r}"
     cd $OUTBOX
     [[ -e "$CFGDIR/updates" ]] && cp $CFGDIR/updates $OUTBOX
@@ -197,6 +192,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     t=$((RACS_FTP_TIMEOUT * 10))
     while true; do
         echo "set ftp:ssl-allow no" > $cmdfile
+        echo "set ftp:use-abor no" >> $cmdfile
         echo "open $RACS_FTP_SERVER" >> $cmdfile
         echo "cd incoming/$ID" >> $cmdfile
 
