@@ -12,13 +12,13 @@ ID="$(hostname -s)"
 [[ -e $CFGDIR/settings ]] && . $CFGDIR/settings
 [[ -e $HOME/bin/library.sh ]] && . $HOME/bin/library.sh
 adc_pid=
-wput_pid=
+ftp_pid=
 
 cleanup_and_shutdown ()
 {
     logger -s -p "local0.info" "Shutting down"
     [[ "$adc_pid" ]] && kill $adc_pid 2> /dev/null
-    [[ "$wput_pid" ]] && kill $wput_pid 2> /dev/null
+    [[ "$ftp_pid" ]] && kill $ftp_pid 2> /dev/null
     # Bring down PPP link and power-off the modem
     sudo poff iridium
     power_off "$RACS_MODEM_POWER"
@@ -185,7 +185,7 @@ sudo ntpdate -b -t $RACS_NTP_TIMEOUT $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
 # Upload files from the OUTBOX. Files are removed after
 # they are successfully transfered.
 if [[ "$RACS_FTP_SERVER" ]]; then
-    filelist="/tmp/uploads"
+    cmdfile="/tmp/lftp.cmds"
     sort_arg="${RACS_REV_SORT:+-r}"
     cd $OUTBOX
     [[ -e "$CFGDIR/updates" ]] && cp $CFGDIR/updates $OUTBOX
@@ -194,28 +194,32 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     # Archive all of the non-image files
     zip_non_jpeg
 
+    t=$((RACS_FTP_TIMEOUT * 10))
     while true; do
+        echo "set ftp:ssl-allow no" > $cmdfile
+        echo "cd incoming/$ID" >> $cmdfile
+
         # Sort files in timestamp order, oldest first by default. The
         # creation timestamp is incorporated into the filename so we
         # use that rather than the filesystem time.
         for f in *; do
             t=$(cut -f2-3 -d_ <<< "${f%.*}")
             [[ $t ]] && echo "$t $f"
-        done | sort $sort_arg | cut -f2- -d' ' > $filelist
+        done | sort $sort_arg | cut -f2- -d' ' |\
+            sed -e 's/^/put -c -E /' >> $cmdfile
+        echo "bye" >> $cmdfile
 
         # Start the file upload
-        wput -nv --tries=$RACS_FTP_TRIES \
-             --disable-tls -B -R -i $filelist \
-             ftp://$RACS_FTP_SERVER/incoming/$ID/ &
+        lftp -f $cmdfile $RACS_FTP_SERVER &
 
-        # Wait for the file transfer to complete. Running wput
+        # Wait for the file transfer to complete. Running lftp
         # asynchronously allows us to be interrupted by the
         # PPP_TIMELIMIT alarm immediately.
-        wput_pid=$!
-        wait $wput_pid
-        # If wput exits without error, break out of the loop.
+        ftp_pid=$!
+        wait $ftp_pid
+        # If lftp exits without error, break out of the loop.
         [[ "$?" = "0" ]] && break
-        wput_pid=
+        ftp_pid=
     done
 fi
 

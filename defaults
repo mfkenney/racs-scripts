@@ -14,8 +14,6 @@ RACS_NTP_TIMEOUT=10
 RACS_FTP_SERVER=128.95.96.18
 # User account on the FTP server
 RACS_FTP_USER=ftpuser
-# Number of attempts to upload each file
-RACS_FTP_TRIES=1
 # Rescale factor for uploaded images
 RACS_SCALE=0.5
 # Number of cameras
