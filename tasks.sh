@@ -25,6 +25,7 @@ cleanup_and_shutdown ()
 
     # Shutdown until next sample time
     [[ "$RACS_NOSLEEP" ]] || set_alarm.sh $RACS_INTERVAL
+    exit 0
 }
 
 if [[ -e /tmp/INHIBIT ]]; then
@@ -120,7 +121,7 @@ else
 fi
 
 # Set a time limit for the rest of the script to finish
-trap cleanup_and_shutdown ALRM
+trap cleanup_and_shutdown ALRM INT QUIT TERM
 sleep $RACS_PPP_TIMELIMIT && kill -ALRM $$ 2> /dev/null &
 alarm_pid=$!
 
