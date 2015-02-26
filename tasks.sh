@@ -197,6 +197,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     t=$((RACS_FTP_TIMEOUT * 10))
     while true; do
         echo "set ftp:ssl-allow no" > $cmdfile
+        echo "open $RACS_FTP_SERVER" >> $cmdfile
         echo "cd incoming/$ID" >> $cmdfile
 
         # Sort files in timestamp order, oldest first by default. The
@@ -210,7 +211,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
         echo "bye" >> $cmdfile
 
         # Start the file upload
-        lftp -f $cmdfile $RACS_FTP_SERVER &
+        lftp -f $cmdfile &
 
         # Wait for the file transfer to complete. Running lftp
         # asynchronously allows us to be interrupted by the
