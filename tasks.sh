@@ -8,6 +8,8 @@ t_session=$(date +%s)
 CFGDIR="$HOME/config"
 OUTBOX="$HOME/OUTBOX"
 INBOX="$HOME/INBOX"
+# Temporary storage of full-res images
+FULLRES="$HOME/FULLRES"
 ID="$(hostname -s)"
 
 [[ -e $CFGDIR/settings ]] && . $CFGDIR/settings
@@ -132,10 +134,11 @@ if [[ -e "$INBOX/updates" ]]; then
     . $CFGDIR/settings
 fi
 
-# Locate full-res images and add to OUTBOX
+# Locate full-res images and add to a separate OUTBOX
+mkdir -p "$FULLRES"
 if [[ -e "$INBOX/fullres.txt" ]]; then
     while read name; do
-        findimg.sh "$name"
+        findimg.sh "$name" "$FULLRES"
     done <"$INBOX/fullres.txt"
     rm -f "$INBOX/fullres.txt"
 fi
@@ -175,6 +178,13 @@ if [[ "$RACS_FTP_SERVER" ]]; then
                  [[ $t ]] && echo "$t $f"
              done | sort $sort_arg | cut -f2- -d' ')
 
+    # Move the most recent file from the FULLRES directory
+    # to the OUTBOX and make it the first file in the upload
+    # list. If the upload fails, this file will end up being
+    # sorted with the rest on the next attempt.
+    firstfile="$(ls -t -1 $FULLRES | tail -n 1)"
+    [[ $firstfile ]] && mv -v "$FULLRES/$firstfile" "$OUTBOX"
+
     cat<<EOF > $cmdfile
 set ftp:ssl-allow no
 set ftp:use-abor no
@@ -183,7 +193,7 @@ open $RACS_FTP_SERVER
 cd /outgoing/$ID
 mget -E -O $INBOX/ updates fullres.txt
 cd /incoming/$ID
-mput -c -E ${files[*]}
+mput -c -E $firstfile ${files[*]}
 bye
 EOF
 
