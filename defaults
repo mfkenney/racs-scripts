@@ -29,7 +29,7 @@ RACS_MODEM_WARMUP=5
 # light conditions
 RACS_STREAM_TIME=1
 # Maximum age (in days) of files in the OUTBOX
-RACS_MAX_AGE=3
+RACS_MAX_AGE=2
 # By default, the newest file in the OUTBOX is uploaded
 # first. Setting this variable to the empty value will
 # cause the oldest file to be uploaded first.
