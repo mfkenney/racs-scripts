@@ -189,6 +189,8 @@ if [[ "$RACS_FTP_SERVER" ]]; then
 set ftp:ssl-allow no
 set ftp:use-abor no
 set ftp:use-allo no
+set ftp:use-feat no
+set ftp:use-size yes
 open $RACS_FTP_SERVER
 cd /outgoing/$ID
 mget -E -O $INBOX/ updates fullres.txt
