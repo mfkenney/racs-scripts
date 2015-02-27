@@ -178,6 +178,7 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     cat<<EOF > $cmdfile
 set ftp:ssl-allow no
 set ftp:use-abor no
+set ftp:use-allo no
 open $RACS_FTP_SERVER
 cd /outgoing/$ID
 mget -E -O $INBOX/ updates fullres.txt
@@ -186,7 +187,7 @@ mput -c -E ${files[*]}
 bye
 EOF
 
-    # Start the file upload
+    # Start the file transfer
     lftp -f $cmdfile &
 
     # Wait for the file transfer to complete. Running lftp
