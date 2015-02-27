@@ -106,7 +106,7 @@ zip_non_jpeg ()
     files=()
     for f in *; do
         case "$f" in
-            *.jpg|*.zip);;
+            *.jpg|*.zip|*.tar);;
             *)files+=("$f") ;;
         esac
     done
