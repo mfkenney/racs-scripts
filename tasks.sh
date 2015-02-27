@@ -4,6 +4,7 @@
 #
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
+t_session=$(date +%s)
 CFGDIR="$HOME/config"
 OUTBOX="$HOME/OUTBOX"
 INBOX="$HOME/INBOX"
@@ -125,48 +126,18 @@ trap cleanup_and_shutdown ALRM INT QUIT TERM
 sleep $RACS_PPP_TIMELIMIT && kill -ALRM $$ 2> /dev/null &
 alarm_pid=$!
 
-# Command file for lftp
-cmdfile="/tmp/lftp.cmds"
-cat<<EOF > $cmdfile
-set ftp:ssl-allow no
-set ftp:use-abor no
-open $RACS_FTP_SERVER
-cd outgoing/$ID
-get -E updates -o $INBOX/
-get -E fullres.txt -o $INBOX/
-bye
-EOF
+# Check for updates transferred during the previous call
+if [[ -e "$INBOX/updates" ]]; then
+    mv "$INBOX/updates" "$CFGDIR"
+    . $CFGDIR/settings
+fi
 
-# Download configuration updates and the list of
-# requested full-res images to the INBOX
-if [[ "$RACS_FTP_SERVER" ]]; then
-    log_event "INFO" "Checking for configuration updates"
-
-    lftp -f $cmdfile &
-    child=$!
-    n=90
-    while sleep 1; do
-        kill -0 $child 2> /dev/null || break
-        if ((--n <= 0)); then
-            kill $child 2> /dev/null
-            wait $child
-            logger -s -p "local0.warn" "Killed FTP client"
-            break
-        fi
-    done
-
-    if [[ -e "$INBOX/updates" ]]; then
-        mv "$INBOX/updates" "$CFGDIR"
-        . $CFGDIR/settings
-    fi
-
-    # Locate full-res images and add to OUTBOX
-    if [[ -e "$INBOX/fullres.txt" ]]; then
-        while read name; do
-            findimg.sh "$name"
-        done <"$INBOX/fullres.txt"
-        rm -f "$INBOX/fullres.txt"
-    fi
+# Locate full-res images and add to OUTBOX
+if [[ -e "$INBOX/fullres.txt" ]]; then
+    while read name; do
+        findimg.sh "$name"
+    done <"$INBOX/fullres.txt"
+    rm -f "$INBOX/fullres.txt"
 fi
 
 # Stop the A/D monitor
@@ -182,7 +153,10 @@ sudo ntpdate -b -t $RACS_NTP_TIMEOUT $RACS_NTP_SERVER 1> $OUTBOX/ntp.out 2>&1
 # Upload files from the OUTBOX. Files are removed after
 # they are successfully transfered.
 if [[ "$RACS_FTP_SERVER" ]]; then
+    # Command file for lftp
+    cmdfile="/tmp/lftp.cmds"
     sort_arg="${RACS_REV_SORT:+-r}"
+
     cd $OUTBOX
     [[ -e "$CFGDIR/updates" ]] && cp $CFGDIR/updates $OUTBOX
     df -h /dev/mmcblk0p4 > disk_usage.txt
@@ -190,35 +164,37 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     # Archive all of the non-image files
     zip_non_jpeg
 
-    t=$((RACS_FTP_TIMEOUT * 10))
-    while true; do
-        echo "set ftp:ssl-allow no" > $cmdfile
-        echo "set ftp:use-abor no" >> $cmdfile
-        echo "open $RACS_FTP_SERVER" >> $cmdfile
-        echo "cd incoming/$ID" >> $cmdfile
+    # Sort OUTBOX files in timestamp order, newest first by
+    # default. The creation timestamp is incorporated into the
+    # filename so we use that rather than the filesystem time.
+    files=()
+    while read; do
+        files+=("$REPLY")
+    done < <(for f in *; do
+                 t=$(cut -f2-3 -d_ <<< "${f%.*}")
+                 [[ $t ]] && echo "$t $f"
+             done | sort $sort_arg | cut -f2- -d' ')
 
-        # Sort files in timestamp order, oldest first by default. The
-        # creation timestamp is incorporated into the filename so we
-        # use that rather than the filesystem time.
-        for f in *; do
-            t=$(cut -f2-3 -d_ <<< "${f%.*}")
-            [[ $t ]] && echo "$t $f"
-        done | sort $sort_arg | cut -f2- -d' ' |\
-            sed -e 's/^/put -c -E /' >> $cmdfile
-        echo "bye" >> $cmdfile
+    cat<<EOF > $cmdfile
+set ftp:ssl-allow no
+set ftp:use-abor no
+open $RACS_FTP_SERVER
+cd /outgoing/$ID
+mget -E -O $INBOX/ updates fullres.txt
+cd /incoming/$ID
+mput -c -E ${files[*]}
+bye
+EOF
 
-        # Start the file upload
-        lftp -f $cmdfile &
+    # Start the file upload
+    lftp -f $cmdfile &
 
-        # Wait for the file transfer to complete. Running lftp
-        # asynchronously allows us to be interrupted by the
-        # PPP_TIMELIMIT alarm immediately.
-        ftp_pid=$!
-        wait $ftp_pid
-        # If lftp exits without error, break out of the loop.
-        [[ "$?" = "0" ]] && break
-        ftp_pid=
-    done
+    # Wait for the file transfer to complete. Running lftp
+    # asynchronously allows us to be interrupted by the
+    # PPP_TIMELIMIT alarm immediately.
+    ftp_pid=$!
+    wait $ftp_pid
+    ftp_pid=
 fi
 
 # Cancel the time-limit alarm
