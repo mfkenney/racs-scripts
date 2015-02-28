@@ -78,7 +78,7 @@ clean_dir ()
     opt="-mtime"
     mult=1
 
-    case "$arg" in
+    case "$age" in
         *m)
             opt="-mmin"
             mult=1
