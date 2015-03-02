@@ -65,21 +65,9 @@ mf=$(create_metadata "$camera")
 
 # Full pathname for the snapshot file
 img="$SNAPSHOTDIR/${camera}.jpg"
-# Remove it if it already exists. VLC will overwrite an
-# existing file but will not update the creation time
-# which will result in an erroneous EXIF timestamp.
-rm -f $img
 
 status "Taking a snapshot from $camera" ${verbose:+0}
-cvlc -I dummy -q --run-time=$RACS_STREAM_TIME \
-     "http://${camera}/nph-mjpeg.cgi?0" \
-     --vout=dummy \
-     --video-filter=scene \
-     --scene-format=jpg \
-     --scene-prefix=${camera} \
-     --scene-replace \
-     --scene-path=$SNAPSHOTDIR \
-     vlc://quit 2> /dev/null
+curl -s -X GET "http://${camera}/nph-jpeg.cgi" > $img
 
 if [[ "$sw" ]]; then
     log_event "INFO" "Power-off $camera"
@@ -89,12 +77,12 @@ fi
 if [[ -e "$img" ]]; then
     base="$(basename $img)"
     # Add EXIF date/time to the image file
-    status "Adding EXIF header" ${verbose:+50}
+    status "Adding EXIF header" ${verbose:+25}
     jhead -mkexif -dsft $img 1>&2
     # Use exiv2 to add some additional metadata
     exiv2 -k -m "$mf" $img 1>&2
     # Rescale for upload
-    status "Rescaling image" ${verbose:+55}
+    status "Rescaling image" ${verbose:+50}
     djpeg "$img" | pnmscale $RACS_SCALE | cjpeg > $OUTBOX/$base
     # Transfer EXIF header to the scaled image
     jhead -te $img $OUTBOX/$base 1>&2
