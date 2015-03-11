@@ -35,7 +35,7 @@ RACS_MAX_AGE=2
 # cause the oldest file to be uploaded first.
 RACS_REV_SORT=1
 # A/D sampling interval (value and units)
-RACS_ADC_INTERVAL=5s
+RACS_ADC_INTERVAL=1s
 # Camera power switches (must be an array)
 RACS_CAMERA_POWER=( 8160_LCD_D2 8160_LCD_D3 )
 # Ethernet power
