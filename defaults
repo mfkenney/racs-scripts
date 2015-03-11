@@ -24,12 +24,14 @@ RACS_CAMERA_BOOTTIME=30
 RACS_CAMERA_WARMUP=0
 # Iridium modem warm-up time
 RACS_MODEM_WARMUP=5
-# Number of seconds to run the video stream 1 is usually
-# sufficient but this may need to be increased in low
-# light conditions
-RACS_STREAM_TIME=1
-# Maximum age (in days) of files in the OUTBOX
+# Maximum age of files in the OUTBOX. The default
+# units are days but you can use hours by appending
+# an 'h' to the value.
 RACS_MAX_AGE=2
+# This variable serves a similar purpose for the archive
+# and should only be used if disk-space is becoming
+# a problem.
+#RACS_MAX_ARCHIVE_AGE=180
 # By default, the newest file in the OUTBOX is uploaded
 # first. Setting this variable to the empty value will
 # cause the oldest file to be uploaded first.

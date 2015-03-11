@@ -8,7 +8,8 @@ t_session=$(date +%s)
 CFGDIR="$HOME/config"
 OUTBOX="$HOME/OUTBOX"
 INBOX="$HOME/INBOX"
-# Temporary storage of full-res images
+ARCHIVEDIR="$HOME/archive"
+# Temporary storage of outbound full-res images
 FULLRES="$HOME/FULLRES"
 ID="$(hostname -s)"
 
@@ -38,6 +39,9 @@ fi
 
 # Remove old files from the OUTBOX
 clean_dir "$OUTBOX" "$RACS_MAX_AGE"
+# Remove old files from archive
+[[ "$RACS_MAX_ARCHIVE_AGE" ]] && \
+    clean_dir "$ARCHIVEDIR" "$RACS_MAX_ARCHIVE_AGE"
 
 # Start the A/D monitor and store the output in the OUTBOX.
 adcfg=
