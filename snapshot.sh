@@ -10,7 +10,6 @@ SNAPSHOTDIR="$HOME/snapshots"
 ARCHIVEDIR="$HOME/archive"
 OUTBOX="$HOME/OUTBOX"
 RACS_SCALE="0.5"
-RACS_STREAM_TIME=1
 
 [[ -e $CFGDIR/settings ]] && . $CFGDIR/settings
 [[ -e $HOME/bin/library.sh ]] && . $HOME/bin/library.sh
