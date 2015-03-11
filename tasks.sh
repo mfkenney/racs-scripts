@@ -166,7 +166,9 @@ if [[ "$RACS_FTP_SERVER" ]]; then
 
     cd $OUTBOX
     [[ -e "$CFGDIR/updates" ]] && cp $CFGDIR/updates $OUTBOX
-    df -h /dev/mmcblk0p4 > disk_usage.txt
+    { df -h /dev/mmcblk0p4; du -s -h $ARCHIVEDIR; } > disk_usage.txt
+    ls -lt *.jpg *.zip > /tmp/outbox_listing.txt
+    cp /tmp/outbox_listing.txt .
 
     # Archive all of the non-image files
     zip_non_jpeg
@@ -187,7 +189,10 @@ if [[ "$RACS_FTP_SERVER" ]]; then
     # list. If the upload fails, this file will end up being
     # sorted with the rest on the next attempt.
     firstfile="$(ls -t -1 $FULLRES | tail -n 1)"
-    [[ $firstfile ]] && mv -v "$FULLRES/$firstfile" "$OUTBOX"
+    [[ $firstfile ]] && {
+        mv -v "$FULLRES/$firstfile" "$OUTBOX"
+        touch "$OUTBOX/$firstfile"
+    }
 
     cat<<EOF > $cmdfile
 set ftp:ssl-allow no
