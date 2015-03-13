@@ -46,3 +46,5 @@ RACS_ENET_POWER=8160_LCD_D1
 RACS_MODEM_POWER=8160_LCD_D0
 # Are we using usb-serial for modem connection
 RACS_USE_USB=1
+# Power for the USB/serial converter heater
+RACS_HEATER_POWER=8160_LCD_D4
