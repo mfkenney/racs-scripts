@@ -100,8 +100,8 @@ fi
 if [[ "$RACS_USE_USB" ]]; then
     # Enable USB
     power_on PA9
-    # Allow 30 seconds for USB-serial device node initialization
-    file_wait /dev/ttyUSB0 30 || {
+    # Allow some time for USB-serial device node initialization
+    file_wait /dev/ttyUSB0 $RACS_USB_STARTTIME || {
         logger -s -p "local0.emerg" "No USB-serial device"
         # No need to bail-out here, as it might "appear" before
         # the PPP process starts. If it doesn't exist, the PPP

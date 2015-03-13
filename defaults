@@ -3,7 +3,7 @@
 # Sampling interval in seconds
 RACS_INTERVAL=21600
 # Maximum number of seconds allowed for PPP connection
-RACS_PPP_LINKTIME=180
+RACS_PPP_LINKTIME=300
 # Maximum time in seconds to keep the PPP link up
 RACS_PPP_TIMELIMIT=720
 # NTP server hostname or IP address
@@ -44,7 +44,10 @@ RACS_CAMERA_POWER=( 8160_LCD_D2 8160_LCD_D3 )
 RACS_ENET_POWER=8160_LCD_D1
 # Iridium modem power
 RACS_MODEM_POWER=8160_LCD_D0
-# Are we using usb-serial for modem connection
+# Are we using USB-serial for modem connection
 RACS_USE_USB=1
-# Power for the USB/serial converter heater
+# Number of seconds to allow for USB/serial adapter
+# to start, this includes heater warm-up time.
+RACS_USB_STARTTIME=120
+# Power for the USB-serial converter heater
 RACS_HEATER_POWER=8160_LCD_D4
