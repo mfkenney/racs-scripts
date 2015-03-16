@@ -107,6 +107,7 @@ if [[ "$RACS_USE_USB" ]]; then
         # the PPP process starts. If it doesn't exist, the PPP
         # link will fail and the script will exit.
     }
+    log_event "INFO" "USB-serial device powered on"
 fi
 
 power_on "$RACS_MODEM_POWER"
