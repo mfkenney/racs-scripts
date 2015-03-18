@@ -48,6 +48,6 @@ RACS_MODEM_POWER=8160_LCD_D0
 RACS_USE_USB=1
 # Number of seconds to allow for USB/serial adapter
 # to start, this includes heater warm-up time.
-RACS_USB_STARTTIME=180
+RACS_USB_STARTTIME=600
 # Power for the USB-serial converter heater
 RACS_HEATER_POWER=8160_LCD_D4
